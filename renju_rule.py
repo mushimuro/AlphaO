@@ -2,9 +2,11 @@ import numpy as np
 
 board = np.zeros((15, 15))
 
+# TODO : swap y, x 
+
 # color : black : 1 & white : -1 & default : 0
-def is_valid(x, y):
-    return board[x][y] == 0
+def is_valid(y, x):
+    return board[y][x] == 0
 
 def check_list_five(color, line):
     maxN = 0
@@ -25,62 +27,41 @@ def check_list_five(color, line):
 
     return False
 
-def is_five(x, y, color):
+def is_five(y, x, color):
     line = []
 
-    # 가로줄
-    if board[max(0,x-1)][y] == color or board[min(15,x+1)][y] == color:
-        # edge case -> pass
-        if x == 0 or x == 15:
-            pass
-        # non-edge cases
-        else:
-            for i in range(max(0, x-4), min(16, x+5), 1):
-                line.append(board[i][y])
-            # check for 5-win
-            if check_list_five(color, line): return True
+    # 가로줄 ; This removes edge cases
+    if (x != 0 and board[y][max(0,x-1)] == color) or (x != 15 and board[y][min(15,x+1)] == color):
+        for i in range(max(0, x-4), min(16, x+5), 1):
+            line.append(board[y][i])
+        # check for 5-win
+        if check_list_five(color, line): return True
 
     # 세로줄
-    elif board[x][max(0, y - 1)] == color or board[x][min(15, y + 1)] == color:
-        # edge case -> pass
-        if y == 0 or y == 15:
-            pass
-        # non-edge cases
+    if (y != 0 and board[max(0, y - 1)][x] == color) or (y != 15 and board[min(15, y + 1)][x] == color):
+        for i in range(max(0, y - 4), min(16, y + 5), 1):
+            line.append(board[i][x])
+        # check for 5-win
+        if check_list_five(color, line): return True
+
+    # 좌측 상단 + 우측 하단 대각선
+    if ((y != 0 or x!= 0) and board[max(0, y - 1)][max(0, x - 1)] == color) or ((y != 15 or x != 15) and board[min(15, y + 1)][min(15, x + 1)] == color):
+        xrange = [max(0, x-4), min(16, x+5)]
+        yrange = [max(0, y - 4), min(16, y + 5)]
+    
+        # use len of x,y range to determine which has shorter range -> use that range to create line
+        if len(xrange) > len(yrange):
+            lower_range = yrange[0] - y    # negative val
+            upper_range = yrange[-1] - y   # positive val
         else:
-            for i in range(max(0, y - 4), min(16, y + 5), 1):
-                line.append(board[x][i])
-            # check for 5-win
-            if check_list_five(color, line): return True
+            lower_range = xrange[0] - x
+            upper_range = xrange[-1] - x
 
-    # 세로줄
+        for i in range(lower_range , upper_range , 1):
+            line.append(board[y+i][x+i])
+        # check for 5-win
+        if check_list_five(color, line): return True
 
-    # 오른 대각선
-    elif board[max(0, x - 1)][max(0, y - 1)] == color or board[min(15, x + 1)][min(15, y + 1)] == color:
-        # edge case -> pass
-        if x == 0 or x == 15 or y == 0 or y == 15:
-            pass
-        # non-edge cases
-        else:
-            xrange = [max(0, x-4), min(16, x+5)]
-            yrange = [max(0, y - 4), min(16, y + 5)]
-            mixrange = [min(xrange[0], yrange[0]), min(xrange[0], yrange[0])]
 
-            for i in range (mixrange[0], mixrange[1], 1):
-                line.append(board[][])
-            # if y - 4 < 0:
-            #     for i in range(0, y + 5, 1):
-            #         line.append(board[x + i][i])
-            #     # 불편 = 편안 (?)
-            # elif y + 4 > 15:
-            #     for i in range(y - 4, 16, 1):
-            #         line.append(board[x][i])
-            #     # 불편 = 편안 (?)
-            # else:
-            #     if board[x][y - 1] == color or board[x][y + 1] == color:
-            #         for i in range(-4, 5, 1):
-            #             line.append(board[x][y + i])
-                # 불편 = 편안 (?)
-            # check for 5-win
-            if check_list_five(color, line): return True
-
-    # 대각선 * 2
+    # TODO
+    # 좌측 하단 + 우측 상단

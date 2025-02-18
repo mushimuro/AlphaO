@@ -1,0 +1,2 @@
+# AlphaO
+Gomoku AI

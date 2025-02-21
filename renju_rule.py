@@ -72,7 +72,29 @@ def is_five(y, x, color):
 
     # TODO
     # 좌측 하단 + 우측 상단
-    # if...
+    if ((y != 14 or x!= 0) and board[min(14, y + 1)][max(0, x - 1)] == color) or ((y != 0 or x != 14) and board[max(0, y - 1)][min(14, x + 1)] == color):
+        xrange = [max(0, x-4), min(15, x+5)]
+        yrange = [max(0, y - 4), min(15, y + 5)]
+    
+        y_lower_range = yrange[0] - y    # negative val
+        y_upper_range = yrange[-1] - y   # positive val
+        x_lower_range = xrange[0] - x
+        x_upper_range = xrange[-1] - x
+
+        if y_lower_range < x_lower_range:
+            lower_range = x_lower_range
+        else:
+            lower_range = y_lower_range
+
+        if y_upper_range > x_upper_range:
+            upper_range = x_upper_range
+        else:
+            upper_range = y_upper_range
+
+        for i in range(lower_range , upper_range , 1):
+            line.append(board[y-i][x+i])
+        # check for 5-win
+        if check_list_five(color, line): return "checked"
 
     # if not 5 stone 
     # TODO : change to False

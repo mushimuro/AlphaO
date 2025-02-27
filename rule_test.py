@@ -1,7 +1,7 @@
 import renju_rule as rule
 
 def row():
-    a = [
+    board = [
         [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
         [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -19,7 +19,7 @@ def row():
         [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],  # (14, 10)
         # 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
     ]
-    rule.board = a
+    rule.board = board
     t1 = rule.is_five(0, 5, 1)
     t2 = rule.is_five(1, 2, 1)
     t3 = rule.is_five(3, 13, 1)
@@ -109,7 +109,7 @@ def diagonal_falling():
     print("Test6:                 ", t6 == "Not is_five")
 
 def diagonal_rising():
-    a = [
+    board = [
         [0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 0
         [2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0], # row 1
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], # row 2
@@ -127,7 +127,7 @@ def diagonal_rising():
         [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], # row 14
        # 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
     ]
-    rule.board = a
+    rule.board = board
     t1 = rule.is_five(11, 10, 1)
     t2 = rule.is_five(0,1, 1)
     t3 = rule.is_five(14, 4, 1)
@@ -141,7 +141,7 @@ def diagonal_rising():
     print("Test3 (edge):          ", t3 == "checked")
     print("Test4:                 ", t4 == "Not is_five")
     print("Test5:                 ", t5 == "Not is_five")
-    print("Test6:                 ", t6 == "checked")
+    print("Test6:                 ", t6 == "Not is_five")
 
 
 row()

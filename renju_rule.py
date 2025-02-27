@@ -1,6 +1,6 @@
 import numpy as np
 
-board = np.zeros((15, 15))
+board = np.zeros((15, 15), dtype=int)
 
 
 # board is (y,x)

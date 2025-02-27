@@ -20,12 +20,12 @@ def row():
         # 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
     ]
     rule.board = board
-    t1 = rule.is_five(0, 5, 1)
-    t2 = rule.is_five(1, 2, 1)
-    t3 = rule.is_five(3, 13, 1)
-    t4 = rule.is_five(7, 4, 1)
-    t5 = rule.is_five(11, 5 , 2)
-    t6 = rule.is_five(14, 10, 1)
+    t1 = rule.pre_check(0, 5, 1)
+    t2 = rule.pre_check(1, 2, 1)
+    t3 = rule.pre_check(3, 13, 1)
+    t4 = rule.pre_check(7, 4, 1)
+    t5 = rule.pre_check(11, 5 , 2)
+    t6 = rule.pre_check(14, 10, 1)
 
     print("Row Check")
     print("Test1 (overline):      ", t1 == "Not is_five")
@@ -56,12 +56,12 @@ def column():
         # 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
     ]
     rule.board = board
-    t1 = rule.is_five(1, 0, 1)
-    t2 = rule.is_five(14, 1, 1)
-    t3 = rule.is_five(2, 2, 1)
-    t4 = rule.is_five(6, 4, 1)
-    t5 = rule.is_five(7, 7, 1)
-    t6 = rule.is_five(5, 14, 1)
+    t1 = rule.pre_check(1, 0, 1)
+    t2 = rule.pre_check(14, 1, 1)
+    t3 = rule.pre_check(2, 2, 1)
+    t4 = rule.pre_check(6, 4, 1)
+    t5 = rule.pre_check(7, 7, 1)
+    t6 = rule.pre_check(5, 14, 1)
 
     print("Column Check")
     print("Test1 (overline):      ", t1 == "Not is_five")
@@ -93,12 +93,12 @@ def diagonal_falling():
        # 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
     ]
     rule.board = board
-    t1 = rule.is_five(7, 8, 1)
-    t2 = rule.is_five(14, 1, 2)
-    t3 = rule.is_five(13, 5, 1)
-    t4 = rule.is_five(11, 7, 2)
-    t5 = rule.is_five(5, 9, 1)
-    t6 = rule.is_five(3, 11, 1)
+    t1 = rule.pre_check(7, 8, 1)
+    t2 = rule.pre_check(14, 1, 2)
+    t3 = rule.pre_check(13, 5, 1)
+    t4 = rule.pre_check(11, 7, 2)
+    t5 = rule.pre_check(5, 9, 1)
+    t6 = rule.pre_check(3, 11, 1)
 
     print("Diagonal falling Check")
     print("Test1 (overline):      ", t1 == "Not is_five")
@@ -128,12 +128,12 @@ def diagonal_rising():
        # 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
     ]
     rule.board = board
-    t1 = rule.is_five(11, 10, 1)
-    t2 = rule.is_five(0,1, 1)
-    t3 = rule.is_five(14, 4, 1)
-    t4 = rule.is_five(6, 7, 1)
-    t5 = rule.is_five(4, 3, 1)
-    t6 = rule.is_five(5, 4, 1)
+    t1 = rule.pre_check(11, 10, 1)
+    t2 = rule.pre_check(0,1, 1)
+    t3 = rule.pre_check(14, 4, 1)
+    t4 = rule.pre_check(6, 7, 1)
+    t5 = rule.pre_check(4, 3, 1)
+    t6 = rule.pre_check(5, 4, 1)
 
     print("Diagonal Rising Check")
     print("Test1 (overline):      ", t1 == "Not is_five")
@@ -148,11 +148,3 @@ row()
 column()
 diagonal_falling()
 diagonal_rising()
-
-
-
-
-
-
-
-

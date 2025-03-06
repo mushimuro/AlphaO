@@ -32,8 +32,7 @@ def check_list(color, line):
     for i in range(len(line)):
         # check white is 5 (white can have 5+ in a row)
         if color == -1 and count == 5:
-            return "overline"
-            # return True
+            return True
 
         if line[i] == color:
             count += 1
@@ -209,24 +208,18 @@ def make_five_row(line):
 
 
 def is_overline(y,x):
-    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
-    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
-
     for j in range(4):
-        line = [1]
+        cnt = 0
         for i in range(2):
             cur_y, cur_x = y, x
             while True:
                 if board[cur_y][cur_x] == 0 or board[cur_y][cur_x] == -1:
                     break
                 else:
-                    if i == 0:
-                        line.append(board[cur_y][cur_x])
-                    else:
-                        line.insert(0, board[cur_y][cur_x])
+                    cnt += 1
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
 
-        if check_list(1, line) == "overline":
+        if cnt > 5:
             return True
 
     return False

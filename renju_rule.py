@@ -62,7 +62,7 @@ def pre_check(y, x, color):
         if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and board[y+1][x+1] == color) or ((y == 14 or x == 14) and board[y-1][x-1] == color)):
             xrange = [max(0, x-5), min(15, x+6)]
             yrange = [max(0, y - 5), min(15, y + 6)]
-        
+
             y_lower_range = yrange[0] - y    # negative val
             y_upper_range = yrange[-1] - y   # positive val
             x_lower_range = xrange[0] - x
@@ -88,7 +88,7 @@ def pre_check(y, x, color):
         if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and board[y-1][x+1]) or ((y == 0 or x == 14) and board[y+1][x-1])):
             xrange = [max(0, x-5), min(15, x+6)]
             yrange = [max(0, y - 5), min(15, y + 6)]
-        
+
             y_lower_range = yrange[0] - y    # negative val
             y_upper_range = yrange[-1] - y   # positive val
             x_lower_range = xrange[0] - x
@@ -110,7 +110,7 @@ def pre_check(y, x, color):
             if check_list(color, line): return "checked"   # TODO : change return "checked" -> return True
 
 
-    # if not 5 stone 
+    # if not 5 stone
     return "Not is_five"   # TODO : change to False
 
 
@@ -152,45 +152,50 @@ def check_prohibit_point(ban):
         if is_samsam(y, x) or is_double_four(y, x) or is_overline(y, x):
             ban.remove(i)
 
-
+# TODO 한줄에 4-4 나오는거 추가
 def is_double_four(y, x):
     four_cnt = 0
-
-    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
-    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
-
-
+    # 양쪽 공백 나올때까지 저장(공백도 같이 저장)
     for j in range(4):
+        line = [1]
+        center = 0
         for i in range(2):
-            check_board = board.copy()
-            check_board[y][x] = 1
             empty_cnt = 0
             cur_y, cur_x = y, x
-            if open_four(cur_y, cur_x) == 2: return True
             while True:
-                if empty_cnt == 2 or check_board[cur_y][cur_x] == -1:
+                if empty_cnt == 2 or board[cur_y][cur_x] == -1:
                     break
-                elif check_board[cur_y][cur_x] == 0:
+                elif board[cur_y][cur_x] == 0:
                     empty_cnt += 1
-                    check_board[cur_y][cur_x] = 1
 
-                    cnt = 0
-                    for k in range(2):
-                        while True:
-                            if check_board[cur_y][cur_x] == -1 or check_board[cur_y][cur_x] == 0:
-                                break
-                            else:
-                                cnt += 1
-                            cur_y, cur_x = y + list_dy[j * 2 + k], x + list_dx[j * 2 + k]
-                    if cnt == 5:
-                        four_cnt += 1
-                        if four_cnt == 2 : return True
-                        break
+                if i == 0:
+                    line.append(board[cur_y][cur_x])
+                else:
+                    line.insert(0, board[cur_y][cur_x])
+                    center += 1
 
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
 
-            return False
+        # 오목되는지 체크
+        if make_five_row(line):
+            four_cnt += 1
+            if four_cnt >= 2: return True
+    return False
 
+def make_five_row(line):
+    for i in range(len(line)):
+        if line[i] == 0:
+            line[i] = 1
+            count = 0
+            for stone in line:
+                if stone == 1:
+                    count += 1
+                    if count == 5:
+                        return True
+                else:
+                    count = 0
+            line[i] = 0
+    return False
 
 
 def is_overline(y,x):

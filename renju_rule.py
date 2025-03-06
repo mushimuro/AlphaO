@@ -161,21 +161,23 @@ def check_prohibit_point(ban):
         if is_samsam(y, x) or is_double_four(y, x) or is_overline(y, x):
             ban.remove(i)
 
+
 # TODO 한줄에 4-4 나오는거 추가
 def is_double_four(y, x):
     four_cnt = 0
     # 양쪽 공백 나올때까지 저장(공백도 같이 저장)
     for j in range(4):
+        # if open_four(y,x) == 2: return True
         line = [1]
         center = 0
         for i in range(2):
             empty_cnt = 0
             cur_y, cur_x = y, x
             while True:
-                if empty_cnt == 2 or board[cur_y][cur_x] == -1:
-                    break
-                elif board[cur_y][cur_x] == 0:
+                if board[cur_y][cur_x] == 0:
                     empty_cnt += 1
+                elif empty_cnt == 2 or board[cur_y][cur_x] == -1:
+                    break
 
                 if i == 0:
                     line.append(board[cur_y][cur_x])
@@ -190,6 +192,7 @@ def is_double_four(y, x):
             four_cnt += 1
             if four_cnt >= 2: return True
     return False
+
 
 def make_five_row(line):
     for i in range(len(line)):

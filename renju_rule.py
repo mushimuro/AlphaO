@@ -1,6 +1,12 @@
+from itertools import count
+
 import numpy as np
+from numpy.matlib import empty
 
 board = np.zeros((15, 15))
+ban = []
+list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
 
 
 # board is (y,x)
@@ -14,7 +20,8 @@ def check_list_five(color, line):
     for i in range(len(line)):
         # check white is 5
         if color == -1 and count == 5:
-            return True
+            return "overline"
+            # return True
 
         if line[i] == color:
             count += 1
@@ -99,4 +106,107 @@ def is_five(y, x, color):
     # if not 5 stone 
     # TODO : change to False
     return "Not is_five"
+
+
+def find_prohibit_ppint(y, x):
+    cnt = 0
+    empty = 0
+
+    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
+
+    for j in range(4):
+        for i in range(2):
+            cur_y, cur_x = y, x
+            while True:
+
+                if empty == 2:
+                    break
+
+                # Empty
+                if board[cur_y][cur_x] == 0:
+                    empty += 1
+                    if is_samsam(cur_y, cur_x) or is_double_four(cur_y, cur_x) or is_overline(cur_y,cur_x):
+                        ban.append({cur_y, cur_x})
+                # Black
+                elif board[cur_y][cur_x] == 1:
+                    cnt += 1
+                # White
+                elif board[cur_y][cur_x] == -1:
+                    break
+
+                cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
+
+
+def check_prohibit_point(ban):
+    if len(ban) == 0: return
+
+    for i in ban:
+        y, x = i
+        if is_samsam(y, x) or is_double_four(y, x) or is_overline(y, x):
+            ban.remove(i)
+
+
+def is_double_four(y, x):
+    four_cnt = 0
+
+    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
+
+
+    for j in range(4):
+        for i in range(2):
+            check_board = board.copy()
+            check_board[y][x] = 1
+            empty_cnt = 0
+            cur_y, cur_x = y, x
+            if open_four(cur_y, cur_x) == 2: return True
+            while True:
+                if empty_cnt == 2 or check_board[cur_y][cur_x] == -1:
+                    break
+                elif check_board[cur_y][cur_x] == 0:
+                    empty_cnt += 1
+                    check_board[cur_y][cur_x] = 1
+
+                    cnt = 0
+                    for k in range(2):
+                        while True:
+                            if check_board[cur_y][cur_x] == -1 or check_board[cur_y][cur_x] == 0:
+                                break
+                            else:
+                                cnt += 1
+                            cur_y, cur_x = y + list_dy[j * 2 + k], x + list_dx[j * 2 + k]
+                    if cnt == 5:
+                        four_cnt += 1
+                        if four_cnt == 2 : return True
+                        break
+
+                cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
+
+            return False
+
+
+
+def is_overline(y,x):
+    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
+
+    for j in range(4):
+        line = [1]
+        for i in range(2):
+            cur_y, cur_x = y, x
+            while True:
+                if board[cur_y][cur_x] == 0 or board[cur_y][cur_x] == -1:
+                    break
+                else:
+                    if i == 0:
+                        line.append(board[cur_y][cur_x])
+                    else:
+                        line.insert(0, board[cur_y][cur_x])
+                cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
+
+        if check_list_five(1, line) == "overline":
+            return True
+
+    return False
 

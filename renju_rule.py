@@ -10,12 +10,22 @@ list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
 
 
 
+# TODO: check if "self".board[][] needs to be applied to all methods
+
+# check if the spot is placeable(empty stone)
+def is_placeable(self, y, x):
+    if self.board[y][x] == 0:
+        return True
+    return False
+
 
 # board is (y,x)
 # color : black : 1 & white : -1 & default : 0
 def is_valid(y, x):
     return board[y][x] == 0
 
+# 승리 및 장목 확인
+# TODO : 장목 되었을때 아예 못두도록 하도록 바꾸기; 현재는 그냥 win-case가 아니도록만 설정해둠
 def check_list(color, line):
     maxN = 0
     count = 0

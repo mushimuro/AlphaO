@@ -227,3 +227,86 @@ def is_overline(y,x):
 
     return False
 
+# def get_stone_count(x, y, color):
+
+#     x1, y1 = x, y
+#     cnt = 1  # 기준 돌 포함
+#     # 4개의 기본 방향: (0, 1, 2, 3) 각 방향마다 두 쪽(양방향) 검사
+#     for direction in range(4):
+#         for i in range(2):
+	       	
+#             idx = direction * 2 + i 
+            
+#             dy = list_dy[idx]
+#     	    dx = list_dx[idx]  
+#         	x, y = x1, y1
+  
+#             while True:
+#                 x  = x + dx
+#                 y  = y + dy
+#                 # 범위를 벗어나거나 노검일때 
+#                 if x < 0 or x >= 15 or y < 0 or y >= 15 or board[y][x] != 1:
+#                     break
+                
+#                 cnt += 1
+#     return cnt
+
+def is_samsam(y, x, color):
+    cnt = 0
+    board[y][x] = 1 #흑이라 치고 
+
+    for direction in range(4):
+        for i in range(2):
+            
+            idx = direction * 2 + i
+            yy, xx = list_dy[idx], list_dx[idx] # direction 저장
+            ny, nx = x, y # (y,x) 시작
+
+            while True: # 타겟 좌표에서 8방 빈칸 색
+                ny, nx = ny + yy, nx + xx
+                if x < 0 or x >=15 or y < 0 or y >= 15 or board[ny][nx] != 0: # 범위 벗어난 경우
+                    break
+                else:
+                    continue
+            if 0 <x < 15 and 0 < y < 15 and board[ny][ny] == 1: # 바운드 안에 빈칸좌표 확인
+                cy, cx = ny, nx # 열린 4를 확인 하기 위해 좌표 저장
+            else:
+                continue
+
+            board[cy][cx] = 1 # 놨다 치고
+
+            if is_five(cy, cx, color) == True: # 오목확인, open_four << 확정 오픈4, check_open_four << 잠재적 오픈4
+                open_four = 0
+            else:
+                check_open_four = 0
+                for j in range(2):
+                    jdx = direction * 2 + j
+                    cyy, cxx = list_dy[jdx], list_dx[jdx]
+                    nny, nnx = cy, cx # (cy, cx) 부터 탐색 시작
+                    
+                    while True:
+                        nny, nnx = nny + cyy, nnx + cxx
+                        if x < 0 or x >=15 or y < 0 or y >= 15 or board[nny][nnx] != 0:
+                            break
+                    
+                    if 0 <x < 15 and 0 < y < 15 and board[nny][nny] == 1:
+                        if get_stone_count(cy, cx, color) == 4:
+                            check_open_four += 1
+              
+                if check_open_four >= 2:
+                    
+                    if get_stone_count(cy, cx, color) == 4:
+                        
+                        open_four = 1
+
+                    else:
+                        open_four = 0
+            
+            board[cy][cx] = 0 #복구 
+
+            if open_four == 1 and
+
+
+
+                
+

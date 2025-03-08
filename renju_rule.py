@@ -227,28 +227,31 @@ def is_overline(y,x):
 
     return False
 
-def get_stone_count(x, y, color):
+def get_stone_direction(y, x, color, direction_vector):
 
-    x1, y1 = x, y
-    cnt = 1  # 기준 돌 포함
-    # 4개의 기본 방향: (0, 1, 2, 3) 각 방향마다 두 쪽(양방향) 검사
-    for direction in range(4):
-        for i in range(2):
-	       	
-            idx = direction * 2 + i 
-            
-            dy = list_dy[idx]
-            dx = list_dx[idx]  
-            x, y = x1, y1
-  
-            while True:
-                x  = x + dx
-                y  = y + dy
-                # 범위를 벗어나거나 노검일때 
-                if x < 0 or x >= 15 or y < 0 or y >= 15 or board[y][x] != 1:
-                    break
-                
-                cnt += 1
+    cnt = 1  # 시작 돌 포함
+    dy = direction_vector[0]
+    dx = direction_vector[1]
+    
+    
+    # 정방향 탐색 
+    yy, xx = y, x
+    for coord in range(1,5):        
+        yy = y + dy * coord
+        xx = x + dx * coord
+        if yy < 0 or yy >= 15 or xx < 0 or xx >= 15  or board[yy][xx] != color:
+            break
+        cnt += 1
+    
+    # 역방향 탐색
+    yy, xx = y, x
+    for coord in range(1,5):       
+        yy = y - dy * coord
+        xx = x - dx * coord
+        if yy < 0 or yy >= 15 or xx < 0 or xx >= 15  or board[yy][xx] != color:
+            break
+        cnt += 1
+
     return cnt
 
 list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
@@ -306,12 +309,12 @@ def is_samsam(y, x, color):
                             break
                     
                     if 0 < nnx < 15 and 0 < nny < 15 and board[nny][nnx] == 1:
-                        if get_stone_count(cy, cx, color) == 4:
+                        if get_stone_direction(cy, cx, color) == 4:
                             check_open_four += 1
               
                 if check_open_four >= 2:
                     
-                    if get_stone_count(cy, cx, color) == 4:
+                    if get_stone_direction(cy, cx, color) >= 4:
                         
                         open_four = 1
 
@@ -323,6 +326,7 @@ def is_samsam(y, x, color):
             board[cy][cx] = 0 #복구 
 
             if open_four == 1:# 다시 이전 빈칸 board[y][x]와서 오픈 3 가능성 확인
+                #if 오목이고, 장목이 아니고, 삼삼이나 사사가 아니면, 트루
                 open_three = True
                 break
         if open_three: #오픈삼 카운트

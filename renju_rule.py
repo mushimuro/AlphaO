@@ -34,8 +34,7 @@ def is_invalid(y, x):
 #####################################
 # 이거 이름을 check_list_for_win() 같은걸로 바꾸는게?
 #####################################
-# 승리 및 장목 확인
-# TODO : 장목 되었을때 아예 못두도록 하도록 바꾸기; 현재는 그냥 win-case가 아니도록만 설정해둠
+# only checks for winning status
 def check_list(color, line):
     maxN = 0
     count = 0
@@ -52,7 +51,7 @@ def check_list(color, line):
 
     if maxN == 5:
         return True
-    
+
     return False
 
 
@@ -74,7 +73,9 @@ def pre_check(gui_board, y, x, color):
             for i in range(max(0, y - 5), min(15, y + 6), 1):
                 line.append(gui_board[i][x])
             # check for 5-win
-            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
+            check = check_list(color, line)
+            if check:
+                return "win"   # TODO : change return "checked" -> return True
 
     # 좌측 상단 + 우측 하단 대각선
     if (gui_board[max(0, y - 1)][max(0, x - 1)] == color) or (gui_board[min(14, y + 1)][min(14, x + 1)] == color):

@@ -2,6 +2,7 @@ import sys, os
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
+from renju_rule import *
 
 BOARD_SIZE = 15
 CELL_SIZE = 40
@@ -10,14 +11,15 @@ STONE_SIZE = 15
 class GomokuBoard(QWidget):
     def __init__(self):
         super().__init__()
-        self.board = [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]
-        self.current_player = "black"
+        self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
+        self.current_player = 1
         
         # TODO : make the size to be flexible : if window becomes smaller, the board scales down too
         self.setFixedSize(BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE)
-        # TODO ??? self.setFixedSize(self.sizeHint())
+        
 
         #################################################################
+        # TODO ??? self.setFixedSize(self.sizeHint())
         # TODO : using image background, need to work on making exact placements
         # self.board_image = QPixmap(os.path.join(os.path.dirname(__file__), "board_img.png"))
         #################################################################
@@ -35,8 +37,6 @@ class GomokuBoard(QWidget):
         # painter.drawPixmap(0, 0, scaled_board)
         #################################################################
 
-        # draw board   // left top corner : (0,0), right bottom corner : (14,14)
-        #              // so... no need for coordinate changing logic?
         pen = QPen(Qt.GlobalColor.black, 2)
         painter.setPen(pen)
         for i in range(BOARD_SIZE):
@@ -48,8 +48,8 @@ class GomokuBoard(QWidget):
         # draw stones
         for row in range(BOARD_SIZE):
             for col in range(BOARD_SIZE):
-                if self.board[row][col]:   # ensures blank space
-                    if self.board[row][col] == "black":  
+                if self.board[row][col] != 0:   # ensures blank space
+                    if self.board[row][col] == 1:  
                         painter.setBrush(QBrush(Qt.GlobalColor.black))  
                     else:  
                         painter.setBrush(QBrush(Qt.GlobalColor.white)) 
@@ -60,26 +60,39 @@ class GomokuBoard(QWidget):
     # placing stones
     def mousePressEvent(self, event):
         x, y = event.position().x(), event.position().y()
-        col = int(x // CELL_SIZE)
-        row = int(y // CELL_SIZE)
+        col = int(x // CELL_SIZE)   # x-value
+        row = int(y // CELL_SIZE)   # y-value
         # row = BOARD_SIZE - 1 - int(y // CELL_SIZE)
 
         # checking valid space  // 여기에서 빈자리인지 확인도 되니 굳이 렌주룰 파일에서 또 확인 안해도 괜찮은지?
-        if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] is None:
-            self.board[row][col] = self.current_player
-            # print(col, row)   # printing coordinate
+        if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] == 0:
             # switch turns
-            if self.current_player == "black":
-                self.current_player = "white"
-            else:
-                self.current_player = "black"
+            # if rule_check == "checked":  # If move is valid according to Renju
+            # not is_samsam(row, col, self.current_player) and
+            # bool1 = is_double_four(row,col)
+            # bool2 = is_samsam(row, col, self.current_player)
+        
+            # if not is_double_four(self.board, row,col):
+            if not is_samsam(self.board, row, col, self.current_player):
+            # if True:
+                self.board[row][col] = self.current_player
+                self.update()
+                rule_check = pre_check(self.board, row, col, self.current_player)
+                # check for win
+                if rule_check == "win":
+                    print("WIN!!!")
+                    # TODO: make this to create event (pop-up screen -> "play again" & "back to main")
 
-            self.update()
+                self.current_player = -1 if self.current_player == 1 else 1
+                self.update()
+            else:
+                print("Invalid move")
+            # self.update()
 
 
     # creates new board
     def clearBoard(self):
-        self.board = [[None] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
+        self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
         self.current_player = "black"  
         self.update()
 

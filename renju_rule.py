@@ -30,6 +30,9 @@ def is_valid(y, x):
 def is_invalid(y, x):
     return x < 0 or x > 14 or y < 0 or y > 14
 
+#####################################
+# 이거 이름을 check_list_for_win() 같은걸로 바꾸는게?
+#####################################
 # 승리 및 장목 확인
 # TODO : 장목 되었을때 아예 못두도록 하도록 바꾸기; 현재는 그냥 win-case가 아니도록만 설정해둠
 def check_list(color, line):
@@ -48,33 +51,33 @@ def check_list(color, line):
 
     if maxN == 5:
         return True
-
+    
     return False
 
 
-def pre_check(y, x, color):
+def pre_check(gui_board, y, x, color):
     line = []
 
     # 가로줄 ; This removes edge cases
-    if (board[y][max(0,x-1)] == color) or (board[y][min(14,x+1)] == color):
+    if (gui_board[y][max(0,x-1)] == color) or (gui_board[y][min(14,x+1)] == color):
         # normal case or edge cases
-        if ((x != 14 and x != 0) or (x == 14 and board[y][x-1] == color) or (x == 0 and board[y][x+1] == color)):
+        if ((x != 14 and x != 0) or (x == 14 and gui_board[y][x-1] == color) or (x == 0 and gui_board[y][x+1] == color)):
             for i in range(max(0, x-5), min(15, x+6), 1):
-                line.append(board[y][i])
+                line.append(gui_board[y][i])
             # check for 5-win
-            if check_list(color, line): return "checked"   # TODO : change return "checked" -> return True
+            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
     # 세로줄 (14,12)
-    if (board[max(0, y - 1)][x] == color) or (board[min(14, y + 1)][x] == color):
-        if ((y != 14 and y != 0) or (y == 14 and board[y-1][x] == color) or (y == 0 and board[y+1][x] == color)):
+    if (gui_board[max(0, y - 1)][x] == color) or (gui_board[min(14, y + 1)][x] == color):
+        if ((y != 14 and y != 0) or (y == 14 and gui_board[y-1][x] == color) or (y == 0 and gui_board[y+1][x] == color)):
             for i in range(max(0, y - 5), min(15, y + 6), 1):
-                line.append(board[i][x])
+                line.append(gui_board[i][x])
             # check for 5-win
-            if check_list(color, line): return "checked"   # TODO : change return "checked" -> return True
+            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
     # 좌측 상단 + 우측 하단 대각선
-    if (board[max(0, y - 1)][max(0, x - 1)] == color) or (board[min(14, y + 1)][min(14, x + 1)] == color):
-        if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and board[y+1][x+1] == color) or ((y == 14 or x == 14) and board[y-1][x-1] == color)):
+    if (gui_board[max(0, y - 1)][max(0, x - 1)] == color) or (gui_board[min(14, y + 1)][min(14, x + 1)] == color):
+        if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and board[y-1][x-1] == color)):
             xrange = [max(0, x-5), min(15, x+6)]
             yrange = [max(0, y - 5), min(15, y + 6)]
 
@@ -94,12 +97,12 @@ def pre_check(y, x, color):
                 upper_range = y_upper_range
 
             for i in range(lower_range , upper_range , 1):
-                line.append(board[y+i][x+i])
+                line.append(gui_board[y+i][x+i])
             # check for 5-win
-            if check_list(color, line): return "checked"   # TODO : change return "checked" -> return True
+            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
     # 좌측 하단 + 우측 상단
-    if (board[min(14, y + 1)][max(0, x - 1)] == color) or (board[max(0, y - 1)][min(14, x + 1)] == color):
+    if (gui_board[min(14, y + 1)][max(0, x - 1)] == color) or (gui_board[max(0, y - 1)][min(14, x + 1)] == color):
         if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and board[y-1][x+1]) or ((y == 0 or x == 14) and board[y+1][x-1])):
             xrange = [max(0, x-5), min(15, x+6)]
             yrange = [max(0, y - 5), min(15, y + 6)]
@@ -120,16 +123,16 @@ def pre_check(y, x, color):
                 upper_range = y_upper_range
 
             for i in range(lower_range , upper_range , 1):
-                line.append(board[y+i][x-i])
+                line.append(gui_board[y+i][x-i])
             # check for 5-win
-            if check_list(color, line): return "checked"   # TODO : change return "checked" -> return True
+            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
 
     # if not 5 stone
     return "Not is_five"   # TODO : change to False
 
 
-def find_prohibit_point(y, x):
+def find_prohibit_point(gui_board, y, x):
     cnt = 0
     empty = 0
 
@@ -147,7 +150,7 @@ def find_prohibit_point(y, x):
                 # Empty
                 if board[cur_y][cur_x] == 0:
                     empty += 1
-                    if is_samsam(cur_y, cur_x) or is_double_four(cur_y, cur_x) or is_overline(cur_y,cur_x):
+                    if is_samsam(gui_board, cur_y, cur_x) or is_double_four(gui_board, cur_y, cur_x) or is_overline(gui_board, cur_y,cur_x):
                         ban.append({cur_y, cur_x})
                 # Black
                 elif board[cur_y][cur_x] == 1:
@@ -159,17 +162,17 @@ def find_prohibit_point(y, x):
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
 
 
-def check_prohibit_point(ban):
+def check_prohibit_point(gui_board, ban):
     if len(ban) == 0: return
 
     for i in ban:
         y, x = i
-        if is_samsam(y, x) or is_double_four(y, x) or is_overline(y, x):
+        if is_samsam(y, x) or is_double_four(y, x) or is_overline(gui_board, y, x):
             ban.remove(i)
 
 
 # TODO 한줄에 4-4 나오는거 추가
-def is_double_four(y, x):
+def is_double_four(gui_board, y, x):
     four_cnt = 0
     # 양쪽 공백 나올때까지 저장(공백도 같이 저장)
     for j in range(4):
@@ -181,16 +184,15 @@ def is_double_four(y, x):
             cur_y, cur_x = y, x
             while True:
                 if is_invalid(cur_y, cur_x): break
-
-                if board[cur_y][cur_x] == 0:
+                if gui_board[cur_y][cur_x] == 0:
                     empty_cnt += 1
-                elif empty_cnt == 2 or board[cur_y][cur_x] == -1:
+                elif empty_cnt == 2 or gui_board[cur_y][cur_x] == -1:
                     break
 
                 if i == 0:
-                    line.append(board[cur_y][cur_x])
+                    line.append(gui_board[cur_y][cur_x])
                 else:
-                    line.insert(0, board[cur_y][cur_x])
+                    line.insert(0, gui_board[cur_y][cur_x])
                     center += 1
 
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
@@ -218,15 +220,16 @@ def make_five_row(line):
     return False
 
 
-def is_overline(y,x):
+def is_overline(gui_board, y,x):
     for j in range(4):
         cnt = 0
         for i in range(2):
             cur_y, cur_x = y, x
             while True:
-                if is_invalid(cur_y, cur_x): break
-
-                if board[cur_y][cur_x] == 0 or board[cur_y][cur_x] == -1:
+                # if is_invalid(cur_y, cur_x): break
+                #
+                # if board[cur_y][cur_x] == 0 or board[cur_y][cur_x] == -1:
+                if gui_board[cur_y][cur_x] == 0 or gui_board[cur_y][cur_x] == -1:
                     break
                 else:
                     cnt += 1
@@ -237,56 +240,75 @@ def is_overline(y,x):
 
     return False
 
-# def get_stone_count(x, y, color):
+def get_stone_direction(gui_board, y, x, color, direction_vector):
 
-#     x1, y1 = x, y
-#     cnt = 1  # 기준 돌 포함
-#     # 4개의 기본 방향: (0, 1, 2, 3) 각 방향마다 두 쪽(양방향) 검사
-#     for direction in range(4):
-#         for i in range(2):
-	       	
-#             idx = direction * 2 + i 
-            
-#             dy = list_dy[idx]
-#     	    dx = list_dx[idx]  
-#         	x, y = x1, y1
-  
-#             while True:
-#                 x  = x + dx
-#                 y  = y + dy
-#                 # 범위를 벗어나거나 노검일때 
-#                 if x < 0 or x >= 15 or y < 0 or y >= 15 or board[y][x] != 1:
-#                     break
-                
-#                 cnt += 1
-#     return cnt
+    cnt = 1  # 시작 돌 포함
+    dy = direction_vector[0]
+    dx = direction_vector[1]
+    
+    
+    # 정방향 탐색 
+    yy, xx = y, x
+    for coord in range(1,5):        
+        yy = y + dy * coord
+        xx = x + dx * coord
+        if yy < 0 or yy >= 15 or xx < 0 or xx >= 15  or gui_board[yy][xx] != color:
+            break
+        cnt += 1
+    
+    # 역방향 탐색
+    yy, xx = y, x
+    for coord in range(1,5):       
+        yy = y - dy * coord
+        xx = x - dx * coord
+        if yy < 0 or yy >= 15 or xx < 0 or xx >= 15  or gui_board[yy][xx] != color:
+            break
+        cnt += 1
 
-def is_samsam(y, x, color):
+    return cnt
+
+list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
+
+def is_samsam(gui_board, y, x, color):
     cnt = 0
-    board[y][x] = 1 #흑이라 치고 
+    gui_board[y][x] = 1 #흑이라 치고 
 
     for direction in range(4):
+        open_three = False # 각 dircetion 시작 시 초기화
         for i in range(2):
             
             idx = direction * 2 + i
             yy, xx = list_dy[idx], list_dx[idx] # direction 저장
-            ny, nx = x, y # (y,x) 시작
+            ny, nx = y, x # (y,x) 시작
 
             while True: # 타겟 좌표에서 8방 빈칸 색
                 ny, nx = ny + yy, nx + xx
-                if x < 0 or x >=15 or y < 0 or y >= 15 or board[ny][nx] != 0: # 범위 벗어난 경우
+                if nx < 0 or nx >=15 or ny < 0 or ny >= 15 or gui_board[ny][nx] != 0: # 범위 벗어난 경우
                     break
                 else:
                     continue
-            if 0 <x < 15 and 0 < y < 15 and board[ny][ny] == 1: # 바운드 안에 빈칸좌표 확인
+            if 0 < nx < 15 and 0 < ny < 15 and gui_board[ny][nx] == 1: # 바운드 안에 빈칸좌표 확인
+                direction_vector = (yy,xx) # open4 케이스에서 오목 확인하기 위해 방향 저장
                 cy, cx = ny, nx # 열린 4를 확인 하기 위해 좌표 저장
             else:
                 continue
 
-            board[cy][cx] = 1 # 놨다 치고
+            gui_board[cy][cx] = 1 # 놨다 치고
+            c_line = [] # 오목체크 라인
 
-            if is_five(cy, cx, color) == True: # 오목확인, open_four << 확정 오픈4, check_open_four << 잠재적 오픈4
+            for c in range(-4, 5): # cy,cx를 중심 좌표로 받고, 저장된 디렉션 벡터기반 해당 라인 저장
+                ny_line = cy + c * direction_vector[0] 
+                nx_line = cx + c * direction_vector[1]
+
+                if 0 <= ny_line < 15 and 0 <= nx_line < 15:
+                    c_line.append(gui_board[ny_line][nx_line])
+                else:
+                    c_line.append(0)
+
+            if make_five_row(c_line): # 오목확인, open_four << 확정 오픈4, check_open_four << 잠재적 오픈4
                 open_four = 0
+
             else:
                 check_open_four = 0
                 for j in range(2):
@@ -296,25 +318,41 @@ def is_samsam(y, x, color):
                     
                     while True:
                         nny, nnx = nny + cyy, nnx + cxx
-                        if x < 0 or x >=15 or y < 0 or y >= 15 or board[nny][nnx] != 0:
+                        if nnx < 0 or nnx >=15 or nny < 0 or nny >= 15 or gui_board[nny][nnx] != 0:
                             break
                     
-                    if 0 <x < 15 and 0 < y < 15 and board[nny][nny] == 1:
-                        if get_stone_count(cy, cx, color) == 4:
+                    if 0 < nnx < 15 and 0 < nny < 15 and gui_board[nny][nnx] == 1:
+                        if get_stone_direction(gui_board, cy, cx, color, direction_vector) == 4:
                             check_open_four += 1
               
                 if check_open_four >= 2:
                     
-                    if get_stone_count(cy, cx, color) == 4:
+                    if get_stone_direction(gui_board, cy, cx, color, direction_vector) >= 4:
                         
                         open_four = 1
 
                     else:
                         open_four = 0
+                else:
+                    open_four = 0
             
-            board[cy][cx] = 0 #복구 
+            gui_board[cy][cx] = 0 #복구 
 
-            if open_four == 1 and
+            if open_four == 1:# 다시 이전 빈칸 board[y][x]와서 오픈 3 가능성 확인
+                #if 오목이고, 장목이 아니고, 삼삼이나 사사가 아니면, 트루
+                open_three = True
+                break
+        if open_three: #오픈삼 카운트
+            cnt += 1
+    
+    gui_board[y][x] = 0 # 다시 빈칸 복구
+
+    if cnt >= 2: 
+        print("is SAMSAM")
+        return True
+    return False
+
+
 
 
 

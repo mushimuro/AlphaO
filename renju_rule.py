@@ -1,3 +1,4 @@
+import copy
 from itertools import count
 
 import numpy as np
@@ -277,14 +278,15 @@ def get_stone_direction(gui_board, y, x, color, direction_vector):
     return cnt
 
 
-def is_samsam(gui_board, y, x, color):
+def is_samsam(board, y, x, color):
     cnt = 0
-    gui_board[y][x] = 1 #흑이라 치고 
+    gui_board = copy.deepcopy(board)
+    gui_board[y][x] = 1 #흑이라 치고
 
     for direction in range(4):
         open_three = False # 각 dircetion 시작 시 초기화
         for i in range(2):
-            
+
             idx = direction * 2 + i
             yy, xx = list_dy[idx], list_dx[idx] # direction 저장
             ny, nx = y, x # (y,x) 시작
@@ -305,7 +307,7 @@ def is_samsam(gui_board, y, x, color):
             c_line = [] # 오목체크 라인
 
             for c in range(-4, 5): # cy,cx를 중심 좌표로 받고, 저장된 디렉션 벡터기반 해당 라인 저장
-                ny_line = cy + c * direction_vector[0] 
+                ny_line = cy + c * direction_vector[0]
                 nx_line = cx + c * direction_vector[1]
 
                 if 0 <= ny_line < 15 and 0 <= nx_line < 15:
@@ -322,28 +324,28 @@ def is_samsam(gui_board, y, x, color):
                     jdx = direction * 2 + j
                     cyy, cxx = list_dy[jdx], list_dx[jdx]
                     nny, nnx = cy, cx # (cy, cx) 부터 탐색 시작
-                    
+
                     while True:
                         nny, nnx = nny + cyy, nnx + cxx
                         if nnx < 0 or nnx >=15 or nny < 0 or nny >= 15 or gui_board[nny][nnx] != 0:
                             break
-                    
+
                     if 0 < nnx < 15 and 0 < nny < 15 and gui_board[nny][nnx] == 1:
                         if get_stone_direction(gui_board, cy, cx, color, direction_vector) == 4:
                             check_open_four += 1
-              
+
                 if check_open_four >= 2:
-                    
+
                     if get_stone_direction(gui_board, cy, cx, color, direction_vector) >= 4:
-                        
+
                         open_four = 1
 
                     else:
                         open_four = 0
                 else:
                     open_four = 0
-            
-            gui_board[cy][cx] = 0 #복구 
+
+            gui_board[cy][cx] = 0 #복구
 
             if open_four == 1:# 다시 이전 빈칸 board[y][x]와서 오픈 3 가능성 확인
                 #if 오목이고, 장목이 아니고, 삼삼이나 사사가 아니면, 트루
@@ -351,10 +353,10 @@ def is_samsam(gui_board, y, x, color):
                 break
         if open_three: #오픈삼 카운트
             cnt += 1
-    
+
     gui_board[y][x] = 0 # 다시 빈칸 복구
 
-    if cnt >= 2: 
+    if cnt >= 2:
         print("is SAMSAM")
         return True
     return False

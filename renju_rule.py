@@ -234,11 +234,12 @@ def make_five_row(line):
 # 4방향 확인해서 돌이 6개 이상 인지 확인
 def is_overline(gui_board, y,x):
     for j in range(4):
-        cnt = 0
+        cnt = 1
         # 양쪽의 돌을 같이 세서 한번에 확인
         for i in range(2):
             cur_y, cur_x = y, x
             while True:
+                cur_y, cur_x = cur_y + list_dy[j * 2 + i], cur_x + list_dx[j * 2 + i]
                 # out of bound check
                 if is_invalid(cur_y, cur_x): break
 
@@ -248,7 +249,6 @@ def is_overline(gui_board, y,x):
                 # 흑돌 일때만 카운트
                 else:
                     cnt += 1
-                cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
         # 6개 이상이면 장목
         if cnt > 5:
             return True

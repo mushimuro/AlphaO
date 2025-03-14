@@ -131,7 +131,8 @@ def pre_check(gui_board, y, x, color):
     # if not 5 stone
     return "Not is_five"   # TODO : change to False
 
-
+# 흑돌이 둔 후, 금수가 생기는지 확인
+# 금수가 생기면 ban 리스트에 저장
 def find_prohibit_point(gui_board, y, x):
     cnt = 0
     empty = 0
@@ -162,6 +163,7 @@ def find_prohibit_point(gui_board, y, x):
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
 
 
+# 백돌을 둠으로써 금수가 해제되는지 확인
 def check_prohibit_point(gui_board, ban):
     if len(ban) == 0: return
 
@@ -172,6 +174,9 @@ def check_prohibit_point(gui_board, ban):
 
 
 # TODO 한줄에 4-4 나오는거 추가
+# 8방향에서 흑돌, 첫번째 공백만 담는 리스트 생성
+# 그 리스트에서 오목을 만들 수 있는지 확인
+# 오목을 2개 이상 만들 수 있으면 4-4로 간주하고 리턴
 def is_double_four(gui_board, y, x):
     four_cnt = 0
     # 양쪽 공백 나올때까지 저장(공백도 같이 저장)
@@ -203,7 +208,7 @@ def is_double_four(gui_board, y, x):
             if four_cnt >= 2: return True
     return False
 
-
+# 받은 리스트에서 오목을 만들 수 있는지 확인
 def make_five_row(line):
     for i in range(len(line)):
         if line[i] == 0:
@@ -219,22 +224,26 @@ def make_five_row(line):
             line[i] = 0
     return False
 
-
+# 장목 확인
+# 4방향 확인해서 돌이 6개 이상 인지 확인
 def is_overline(gui_board, y,x):
     for j in range(4):
         cnt = 0
+        # 양쪽의 돌을 같이 세서 한번에 확인
         for i in range(2):
             cur_y, cur_x = y, x
             while True:
-                # if is_invalid(cur_y, cur_x): break
-                #
-                # if board[cur_y][cur_x] == 0 or board[cur_y][cur_x] == -1:
+                # out of bound check
+                if is_invalid(cur_y, cur_x): break
+
+                # board 에 다른 돌이면 탈출
                 if gui_board[cur_y][cur_x] == 0 or gui_board[cur_y][cur_x] == -1:
                     break
+                # 흑돌 일때만 카운트
                 else:
                     cnt += 1
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
-
+        # 6개 이상이면 장목
         if cnt > 5:
             return True
 
@@ -267,8 +276,6 @@ def get_stone_direction(gui_board, y, x, color, direction_vector):
 
     return cnt
 
-list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
-list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
 
 def is_samsam(gui_board, y, x, color):
     cnt = 0

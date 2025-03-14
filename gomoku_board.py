@@ -2,6 +2,7 @@ import sys, os
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
+from renju_rule import *
 
 BOARD_SIZE = 15
 CELL_SIZE = 40
@@ -15,9 +16,10 @@ class GomokuBoard(QWidget):
         
         # TODO : make the size to be flexible : if window becomes smaller, the board scales down too
         self.setFixedSize(BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE)
-        # TODO ??? self.setFixedSize(self.sizeHint())
+        
 
         #################################################################
+        # TODO ??? self.setFixedSize(self.sizeHint())
         # TODO : using image background, need to work on making exact placements
         # self.board_image = QPixmap(os.path.join(os.path.dirname(__file__), "board_img.png"))
         #################################################################
@@ -66,15 +68,17 @@ class GomokuBoard(QWidget):
 
         # checking valid space  // 여기에서 빈자리인지 확인도 되니 굳이 렌주룰 파일에서 또 확인 안해도 괜찮은지?
         if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] is None:
-            self.board[row][col] = self.current_player
+            current_color = 1 if self.current_player == "black" else -1
+            rule_check = pre_check(row, col, current_color)
+            #self.board[row][col] = self.current_player
             # print(col, row)   # printing coordinate
             # switch turns
-            if self.current_player == "black":
-                self.current_player = "white"
+            if rule_check == "checked":  # If move is valid according to Renju
+                self.board[col][row] = self.current_player
+                self.current_player = "white" if self.current_player == "black" else "black"
+                self.update()
             else:
-                self.current_player = "black"
-
-            self.update()
+                print("Invalid move")
 
 
     # creates new board

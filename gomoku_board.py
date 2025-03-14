@@ -66,14 +66,14 @@ class GomokuBoard(QWidget):
 
         # checking valid space  // 여기에서 빈자리인지 확인도 되니 굳이 렌주룰 파일에서 또 확인 안해도 괜찮은지?
         if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] == 0:
-            # switch turns
-            # if rule_check == "checked":  # If move is valid according to Renju
-            # not is_samsam(row, col, self.current_player) and
-            # bool1 = is_double_four(row,col)
-            # bool2 = is_samsam(row, col, self.current_player)
-        
+            # 6+ stones check
+            overline_check = False
+            if self.current_player == 1:
+                print("black stone")
+                overline_check = is_overline(self.board, row, col)
             # if not is_double_four(self.board, row,col):
-            if not is_samsam(self.board, row, col, self.current_player):
+            print(overline_check)
+            if not is_samsam(self.board, row, col, self.current_player) and not overline_check:
             # if True:
                 self.board[row][col] = self.current_player
                 self.update()
@@ -82,7 +82,9 @@ class GomokuBoard(QWidget):
                 if rule_check == "win":
                     print("WIN!!!")
                     # TODO: make this to create event (pop-up screen -> "play again" & "back to main")
-
+                elif rule_check == "invalid move":
+                    print("Invalid move")
+                
                 self.current_player = -1 if self.current_player == 1 else 1
                 self.update()
             else:

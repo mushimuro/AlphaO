@@ -171,7 +171,7 @@ def check_prohibit_point(gui_board, ban):
 
     for i in ban:
         y, x = i
-        if is_samsam(y, x) or is_double_four(y, x) or is_overline(gui_board, y, x):
+        if is_samsam(gui_board, y, x) or is_double_four(gui_board, y, x) or is_overline(gui_board, y, x):
             ban.remove(i)
 
 
@@ -180,6 +180,7 @@ def check_prohibit_point(gui_board, ban):
 # 그 리스트에서 오목을 만들 수 있는지 확인
 # 오목을 2개 이상 만들 수 있으면 4-4로 간주하고 리턴
 def is_double_four(gui_board, y, x):
+
     four_cnt = 0
     # 양쪽 공백 나올때까지 저장(공백도 같이 저장)
     for j in range(4):
@@ -190,10 +191,15 @@ def is_double_four(gui_board, y, x):
             empty_cnt = 0
             cur_y, cur_x = y, x
             while True:
+                cur_y += list_dy[j * 2 + i]
+                cur_x += list_dx[j * 2 + i]
+
                 if is_invalid(cur_y, cur_x): break
                 if gui_board[cur_y][cur_x] == 0:
                     empty_cnt += 1
-                elif empty_cnt == 2 or gui_board[cur_y][cur_x] == -1:
+                    if empty_cnt == 2:
+                        break
+                elif gui_board[cur_y][cur_x] == -1:
                     break
 
                 if i == 0:
@@ -201,8 +207,6 @@ def is_double_four(gui_board, y, x):
                 else:
                     line.insert(0, gui_board[cur_y][cur_x])
                     center += 1
-
-                cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
 
         # 오목되는지 체크
         if make_five_row(line):

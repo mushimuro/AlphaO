@@ -63,7 +63,9 @@ def pre_check(gui_board, y, x, color):
         # normal case or edge cases
         if ((x != 14 and x != 0) or (x == 14 and gui_board[y][x-1] == color) or (x == 0 and gui_board[y][x+1] == color)):
             for i in range(max(0, x-5), min(15, x+6), 1):
-                line.append(gui_board[y][i])
+                # double checks index out of bound error
+                if 0 <= y < 15 and 0 <= i < 15:
+                    line.append(gui_board[y][i])
             # check for 5-win
             if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
@@ -71,7 +73,8 @@ def pre_check(gui_board, y, x, color):
     if (gui_board[max(0, y - 1)][x] == color) or (gui_board[min(14, y + 1)][x] == color):
         if ((y != 14 and y != 0) or (y == 14 and gui_board[y-1][x] == color) or (y == 0 and gui_board[y+1][x] == color)):
             for i in range(max(0, y - 5), min(15, y + 6), 1):
-                line.append(gui_board[i][x])
+                if 0 <= i < 15 and 0 <= x < 15:
+                    line.append(gui_board[i][x])
             # check for 5-win
             check = check_list(color, line)
             if check:
@@ -99,7 +102,9 @@ def pre_check(gui_board, y, x, color):
                 upper_range = y_upper_range
 
             for i in range(lower_range , upper_range , 1):
-                line.append(gui_board[y+i][x+i])
+                # double checks index out of bound error
+                if 0 <= y + i < 15 and 0 <= x + i < 15:
+                    line.append(gui_board[y+i][x+i])
             # check for 5-win
             if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
@@ -125,7 +130,9 @@ def pre_check(gui_board, y, x, color):
                 upper_range = y_upper_range
 
             for i in range(lower_range , upper_range , 1):
-                line.append(gui_board[y+i][x-i])
+                # double checks index out of bound error
+                if 0 <= y + i < 15 and 0 <= x - i < 15:
+                    line.append(gui_board[y+i][x-i])
             # check for 5-win
             if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 

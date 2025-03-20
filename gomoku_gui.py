@@ -1,10 +1,12 @@
-import sys, os
+import sys
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 import gomoku_board
 
-# TODO : PvC, PvP 정하는 최상단 페이지 만들기
+# TODO
+# 1. PvC, PvP 정하는 최상단 페이지 만들기 -> then create function for choosing player_color
+# 2. placing button function 만들기 : 보드판 누르면 shading effect -> if "place" button clicked, then stone is placed
 
 class Main(QDialog):
     def __init__(self):
@@ -32,7 +34,7 @@ class Main(QDialog):
         self.resize(800, 600)
 
 
-    # main page
+    # main page setup
     def init_main_page(self):
         main_layout = QFormLayout()
         
@@ -71,7 +73,7 @@ class Main(QDialog):
         self.main_page.setLayout(main_layout)
 
 
-    # game page   
+    # game page setup
     def init_game_page(self):
         main_layout = QFormLayout()
         
@@ -109,7 +111,8 @@ class Main(QDialog):
         self.game_page.setLayout(main_layout)
 
 
-    
+    # function for handling game-over
+    # create pop-up screen showing who won, then redirects to main page
     def handle_game_over(self, winner_color):
         print(winner_color)
         msg_box = QMessageBox(self)
@@ -123,8 +126,7 @@ class Main(QDialog):
             self.gomoku_board.clearBoard()
 
 
-    
-
+# run application
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = Main()

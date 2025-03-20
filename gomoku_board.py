@@ -4,6 +4,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from renju_rule import *
 
+# default size for board and stone
 BOARD_SIZE = 15
 CELL_SIZE = 40
 STONE_SIZE = 15

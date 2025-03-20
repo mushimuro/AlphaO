@@ -9,10 +9,13 @@ CELL_SIZE = 40
 STONE_SIZE = 15
 
 class GomokuBoard(QWidget):
-    def __init__(self):
-        super().__init__()
+    game_over_signal = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
         self.current_player = 1
+        self.parent_widget = parent
         
         # TODO : make the size to be flexible : if window becomes smaller, the board scales down too
         self.setFixedSize(BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE)
@@ -62,17 +65,15 @@ class GomokuBoard(QWidget):
         x, y = event.position().x(), event.position().y()
         col = int(x // CELL_SIZE)   # x-value
         row = int(y // CELL_SIZE)   # y-value
-        # row = BOARD_SIZE - 1 - int(y // CELL_SIZE)
 
-        # checking valid space  // 여기에서 빈자리인지 확인도 되니 굳이 렌주룰 파일에서 또 확인 안해도 괜찮은지?
+        # checking if open spot to place
         if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] == 0:
             # 6+ stones check
             overline_check = False
             if self.current_player == 1:
-                print("black stone")
                 overline_check = is_overline(self.board, row, col)
-            # if not is_double_four(self.board, row,col):
-            print(overline_check)
+
+            # TODO : if not is_double_four(self.board, row,col):
             if not is_samsam(self.board, row, col, self.current_player) and not overline_check:
             # if True:
                 self.board[row][col] = self.current_player
@@ -80,8 +81,9 @@ class GomokuBoard(QWidget):
                 rule_check = pre_check(self.board, row, col, self.current_player)
                 # check for win
                 if rule_check == "win":
-                    print("WIN!!!")
-                    # TODO: make this to create event (pop-up screen -> "play again" & "back to main")
+                    winner_color = "Black" if self.current_player == 1 else "White"
+                    self.game_over_signal.emit(winner_color)
+                # check for invalid move
                 elif rule_check == "invalid move":
                     print("Invalid move")
                 
@@ -92,11 +94,25 @@ class GomokuBoard(QWidget):
             # self.update()
 
 
-    # creates new board
+    # creates new board when a game ends
     def clearBoard(self):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
-        self.current_player = "black"  
+        self.current_player = 1  
         self.update()
+
+
+    # pop up screen when someone wins / redirects to main page when clicking "ok"
+    def show_win_popup(self, winner_color):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Game Over")
+        msg_box.setText(f"{winner_color} color wins!")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        button = msg_box.exec()
+
+        if button == QMessageBox.StandardButton.Ok:
+            if self.parent_widget:
+                self.parent_widget.stacked_widget.setCurrentWidget(self.parent_widget.main_page)
+                self.clearBoard()
 
 
 if __name__ == '__main__':

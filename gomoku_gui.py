@@ -43,6 +43,9 @@ class Main(QDialog):
 
         # widgets
         label_widget = QLabel("Main menu")
+        label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_widget.setStyleSheet("font-size: 24px; font-weight: bold;")
+    
         start_button_widget = QPushButton("click to start")
         start_button_layout.addWidget(start_button_widget)
         start_button_widget.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_page))
@@ -74,23 +77,52 @@ class Main(QDialog):
         
         # page layouts
         layout = QVBoxLayout()
-        start_button_layout = QVBoxLayout()
+        buttons_layout = QHBoxLayout()
+        board_layout = QHBoxLayout()
+        board_layout.addStretch()
 
         # widgets
         label_widget = QLabel("ALPHAO!")
-        surrender_button_widget = QPushButton("click to surrender")
-        start_button_layout.addWidget(surrender_button_widget)
-        surrender_button_widget.clicked.connect(lambda: (self.gomoku_board.clearBoard(), self.stacked_widget.setCurrentWidget(self.main_page)))
-        self.gomoku_board = gomoku_board.GomokuBoard()
+        surrender_button_widget = QPushButton("surrender")
+        place_button_widget = QPushButton("place")
+        self.gomoku_board = gomoku_board.GomokuBoard(parent=self)
+        
+        # widget customize & functions
+        label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_widget.setStyleSheet("font-size: 24px; font-weight: bold;")
+        surrender_button_widget.clicked.connect(lambda: self.handle_game_over("Black" if self.gomoku_board.current_player == -1 else "White"))
+        self.gomoku_board.game_over_signal.connect(self.handle_game_over)
     
-        # ordering of layouts/widgets (top -> down)
+        # sub-layout ordering
         layout.addWidget(label_widget)
+        buttons_layout.addWidget(surrender_button_widget)
+        buttons_layout.addWidget(place_button_widget)
+        board_layout.addWidget(self.gomoku_board)
+        board_layout.addStretch()
+
+        # main-layout ordering
         main_layout.addRow(layout)  
-        main_layout.addWidget(self.gomoku_board)
-        main_layout.addRow(start_button_layout)
+        main_layout.addRow(board_layout)
+        main_layout.addRow(buttons_layout)
 
         # default settings
         self.game_page.setLayout(main_layout)
+
+
+    
+    def handle_game_over(self, winner_color):
+        print(winner_color)
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Game Over")
+        msg_box.setText(f"{winner_color} color wins!")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        button = msg_box.exec()
+
+        if button == QMessageBox.StandardButton.Ok:
+            self.stacked_widget.setCurrentWidget(self.main_page)
+            self.gomoku_board.clearBoard()
+
+
     
 
 if __name__ == '__main__':

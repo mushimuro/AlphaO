@@ -160,7 +160,7 @@ def find_prohibit_point(gui_board, y, x):
                 # Empty
                 if board[cur_y][cur_x] == 0:
                     empty += 1
-                    if is_samsam(gui_board, cur_y, cur_x) or is_double_four(gui_board, cur_y, cur_x) or is_overline(gui_board, cur_y,cur_x):
+                    if is_double_three(gui_board, cur_y, cur_x) or is_double_four(gui_board, cur_y, cur_x) or is_overline(gui_board, cur_y,cur_x):
                         ban.append({cur_y, cur_x})
                 # Black
                 elif board[cur_y][cur_x] == 1:
@@ -178,7 +178,7 @@ def check_prohibit_point(gui_board, ban):
 
     for i in ban:
         y, x = i
-        if is_samsam(gui_board, y, x) or is_double_four(gui_board, y, x) or is_overline(gui_board, y, x):
+        if is_double_three(gui_board, y, x) or is_double_four(gui_board, y, x) or is_overline(gui_board, y, x):
             ban.remove(i)
 
 
@@ -288,94 +288,95 @@ def get_stone_direction(gui_board, y, x, color, direction_vector):
         cnt += 1
 
     return cnt
-
-
-def is_samsam(board, y, x, color):
+def is_double_three(board, y, x, color):
+    if color != 1:
+        return False
+    
     cnt = 0
     gui_board = copy.deepcopy(board)
-    gui_board[y][x] = 1 #흑이라 치고
+    gui_board[y][x] = 1
 
     for direction in range(4):
-        open_three = False # 각 dircetion 시작 시 초기화
+        open_three = False
         for i in range(2):
-
             idx = direction * 2 + i
-            yy, xx = list_dy[idx], list_dx[idx] # direction 저장
-            ny, nx = y, x # (y,x) 시작
-
-            while True: # 타겟 좌표에서 8방 빈칸 색
-                ny, nx = ny + yy, nx + xx
-                if nx < 0 or nx >=15 or ny < 0 or ny >= 15 or gui_board[ny][nx] != 0: # 범위 벗어난 경우
-                    break
-                else:
-                    continue
-            if 0 < nx < 15 and 0 < ny < 15 and gui_board[ny][nx] == 1: # 바운드 안에 빈칸좌표 확인
-                direction_vector = (yy,xx) # open4 케이스에서 오목 확인하기 위해 방향 저장
-                cy, cx = ny, nx # 열린 4를 확인 하기 위해 좌표 저장
-            else:
-                continue
-
-            gui_board[cy][cx] = 1 # 놨다 치고
-            c_line = [] # 오목체크 라인
-
-            for c in range(-4, 5): # cy,cx를 중심 좌표로 받고, 저장된 디렉션 벡터기반 해당 라인 저장
-                ny_line = cy + c * direction_vector[0]
-                nx_line = cx + c * direction_vector[1]
-
-                if 0 <= ny_line < 15 and 0 <= nx_line < 15:
-                    c_line.append(gui_board[ny_line][nx_line])
-                else:
-                    c_line.append(0)
-
-            if make_five_row(c_line): # 오목확인, open_four << 확정 오픈4, check_open_four << 잠재적 오픈4
-                open_four = 0
-
-            else:
-                check_open_four = 0
-                for j in range(2):
-                    jdx = direction * 2 + j
-                    cyy, cxx = list_dy[jdx], list_dx[jdx]
-                    nny, nnx = cy, cx # (cy, cx) 부터 탐색 시작
-
-                    while True:
-                        nny, nnx = nny + cyy, nnx + cxx
-                        if nnx < 0 or nnx >=15 or nny < 0 or nny >= 15 or gui_board[nny][nnx] != 0:
-                            break
-
-                    if 0 < nnx < 15 and 0 < nny < 15 and gui_board[nny][nnx] == 1:
-                        if get_stone_direction(gui_board, cy, cx, color, direction_vector) == 4:
-                            check_open_four += 1
-
-                if check_open_four >= 2:
-
-                    if get_stone_direction(gui_board, cy, cx, color, direction_vector) >= 4:
-
-                        open_four = 1
-
-                    else:
-                        open_four = 0
-                else:
-                    open_four = 0
-
-            gui_board[cy][cx] = 0 #복구
-
-            if open_four == 1:# 다시 이전 빈칸 board[y][x]와서 오픈 3 가능성 확인
-                #if 오목이고, 장목이 아니고, 삼삼이나 사사가 아니면, 트루
-                open_three = True
-                break
-        if open_three: #오픈삼 카운트
-            cnt += 1
-
-    gui_board[y][x] = 0 # 다시 빈칸 복구
-
-    if cnt >= 2:
-        print("is SAMSAM")
-        return True
-    return False
-
-
-
-
-
+            yy, xx = list_dy[idx], list_dx[idx]
+            ny, nx = y, x
+            
+            # 한쪽 방향 탐색
+            line = [1]  # 현재 위치의 돌
+            empty_cnt = 0
+            stone_cnt = 0
+            
+            while True:
+                ny += yy
+                nx += xx
                 
+                if is_invalid(ny, nx):
+                    break
+                    
+                if gui_board[ny][nx] == 0:
+                    line.append(0)
+                    empty_cnt += 1
+                elif gui_board[ny][nx] == 1:
+                    line.append(1)
+                    stone_cnt += 1
+                else:  # 백돌이면 중단
+                    break
+                    
+                if empty_cnt > 3 or stone_cnt > 3:  # 빈칸이나 돌이 너무 많으면 중단
+                    break
+            
+            # 반대 방향 탐색
+            ny, nx = y, x
+            empty_cnt = 0
+            stone_cnt = 0
+            
+            while True:
+                ny -= yy
+                nx -= xx
+                
+                if is_invalid(ny, nx):
+                    break
+                    
+                if gui_board[ny][nx] == 0:
+                    line.insert(0, 0)
+                    empty_cnt += 1
+                elif gui_board[ny][nx] == 1:
+                    line.insert(0, 1)
+                    stone_cnt += 1
+                else:
+                    break
+                    
+                if empty_cnt > 2 or stone_cnt > 3:
+                    break
+            
+            # 오픈3 패턴 체크
+            if len(line) >= 4:  # 최소 4칸 이상
+                # 33 패턴들
+                if (line[0] == 0 and line[-1] == 0):  # 양쪽이 열려있어야 함
+                    stone_count = sum(1 for s in line if s == 1)
+                    if stone_count == 3:  # 돌이 정확히 3개
+                        # 연속 패턴: ○●●●○
+                        consecutive = 0
+                        max_consecutive = 0
+                        for stone in line:
+                            if stone == 1:
+                                consecutive += 1
+                                max_consecutive = max(max_consecutive, consecutive)
+                            else:
+                                consecutive = 0
+                                
+                        # 불연속 패턴: ○●●○●○, ○●○●●○
+                        if max_consecutive >= 2 or '0110' in ''.join(map(str, line)) or '1010' in ''.join(map(str, line)) or '10110' in ''.join(map(str, line)):
+                            open_three = True
+                            break
+        
+        if open_three:
+            cnt += 1
+            if cnt >= 2:
+                print("is SAMSAM")
+                return True
 
+    gui_board[y][x] = 0
+    return False

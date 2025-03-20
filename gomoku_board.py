@@ -73,9 +73,15 @@ class GomokuBoard(QWidget):
             overline_check = False
             if self.current_player == 1:
                 overline_check = is_overline(self.board, row, col)
+<<<<<<< HEAD
+            # if not is_double_four(self.board, row,col):
+            print(overline_check)
+            if not is_double_three(self.board, row, col, self.current_player) and not overline_check:
+=======
 
             # TODO : if not is_double_four(self.board, row,col):
             if not is_samsam(self.board, row, col, self.current_player) and not overline_check:
+>>>>>>> 10f6b42c398b2ab45858f538b2e6965dbc8fd92f
             # if True:
                 self.board[row][col] = self.current_player
                 self.update()

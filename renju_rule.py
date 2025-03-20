@@ -262,32 +262,6 @@ def is_overline(gui_board, y,x):
 
     return False
 
-def get_stone_direction(gui_board, y, x, color, direction_vector):
-
-    cnt = 1  # 시작 돌 포함
-    dy = direction_vector[0]
-    dx = direction_vector[1]
-    
-    
-    # 정방향 탐색 
-    yy, xx = y, x
-    for coord in range(1,5):        
-        yy = y + dy * coord
-        xx = x + dx * coord
-        if yy < 0 or yy >= 15 or xx < 0 or xx >= 15  or gui_board[yy][xx] != color:
-            break
-        cnt += 1
-    
-    # 역방향 탐색
-    yy, xx = y, x
-    for coord in range(1,5):       
-        yy = y - dy * coord
-        xx = x - dx * coord
-        if yy < 0 or yy >= 15 or xx < 0 or xx >= 15  or gui_board[yy][xx] != color:
-            break
-        cnt += 1
-
-    return cnt
 def is_double_three(board, y, x, color):
     if color != 1:
         return False

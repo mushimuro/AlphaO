@@ -221,6 +221,8 @@ def is_double_four(gui_board, y, x):
             if four_cnt >= 2: return True
     return False
 
+
+
 # 받은 리스트에서 오목을 만들 수 있는지 확인
 def make_five_row(line):
     for i in range(len(line)):

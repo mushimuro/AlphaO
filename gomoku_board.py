@@ -41,6 +41,7 @@ class GomokuBoard(QWidget):
         # TODO : using image backgounrd
         scaled_board = self.background_img.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
         painter.drawPixmap(0, 0, scaled_board)
+        # QPixmap::scaled: Pixmap is a null pixmap
         #################################################################
 
         pen = QPen(Qt.GlobalColor.black, 2)
@@ -77,7 +78,7 @@ class GomokuBoard(QWidget):
                 overline_check = is_overline(self.board, row, col)
 
             # TODO : if not is_double_four(self.board, row,col):
-            if not is_double_three(self.board, row, col, self.current_player) and not overline_check:
+            if not is_double_three(self.board, row, col, self.current_player) and not overline_check and not is_double_four(self.board, row,col):
             # if True:
                 self.board[row][col] = self.current_player
                 self.update()
@@ -101,6 +102,7 @@ class GomokuBoard(QWidget):
     def clearBoard(self):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
         self.current_player = 1  
+        print(self.current_player)
         self.update()
 
 

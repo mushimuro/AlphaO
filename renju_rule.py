@@ -298,7 +298,7 @@ def is_double_three(board, y, x, color):
                 else:  # 백돌이면 중단
                     break
                     
-                if empty_cnt > 3 or stone_cnt > 3:  # 빈칸이나 돌이 너무 많으면 중단
+                if empty_cnt >= 2 or stone_cnt > 2:  # 빈칸이나 돌이 너무 많으면 중단
                     break
             
             # 반대 방향 탐색

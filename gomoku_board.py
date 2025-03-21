@@ -26,6 +26,7 @@ class GomokuBoard(QWidget):
         # TODO ??? self.setFixedSize(self.sizeHint())
         # TODO : using image background, need to work on making exact placements
         # self.board_image = QPixmap(os.path.join(os.path.dirname(__file__), "board_img.png"))
+        self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "white_background.png"))
         #################################################################
     
 
@@ -38,7 +39,8 @@ class GomokuBoard(QWidget):
         #################################################################
         # TODO : using image backgounrd
         # scaled_board = self.board_image.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
-        # painter.drawPixmap(0, 0, scaled_board)
+        scaled_board = self.background_img.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
+        painter.drawPixmap(0, 0, scaled_board)
         #################################################################
 
         pen = QPen(Qt.GlobalColor.black, 2)

@@ -153,10 +153,10 @@ def double_three_test():
         [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], # row 5
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 6
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 7
-        [0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # row 8
-        [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 9
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # row 8
+        [0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # row 9
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0], # row 10
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # row 11
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 11
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 12
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], # row 13
         [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], # row 14
@@ -164,11 +164,14 @@ def double_three_test():
     ]
     
         rule.board = board
-        t1 = rule.is_samsam(board,3, 3, 1)
-        t2 = rule.is_samsam(board,9, 3, 1)
-        t3 = rule.is_samsam(board,4, 11, 1)
-        t4 = rule.is_samsam(board,9, 10, 1)   
-        print(t1,t2,t3,t4)
+        t1 = rule.is_double_three(board,3, 10, 1)
+        t2 = rule.is_double_three(board,9, 3, 1)
+        t3 = rule.is_double_three(board,4, 11, 1)
+        t4 = rule.is_double_three(board,9, 10, 1)   
+        print(t1)
+        print(t2)
+        print(t3)
+        print(t4)
 
 
     

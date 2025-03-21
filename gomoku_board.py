@@ -102,7 +102,6 @@ class GomokuBoard(QWidget):
     def clearBoard(self):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
         self.current_player = 1  
-        print(self.current_player)
         self.update()
 
 

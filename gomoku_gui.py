@@ -7,6 +7,7 @@ import gomoku_board
 # TODO
 # 1. PvC, PvP 정하는 최상단 페이지 만들기 -> then create function for choosing player_color
 # 2. placing button function 만들기 : 보드판 누르면 shading effect -> if "place" button clicked, then stone is placed
+# 3. 흑 입장에서 금수 자리 보이도록 추가
 
 class Main(QDialog):
     def __init__(self):

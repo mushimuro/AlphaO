@@ -216,26 +216,58 @@ def is_double_four(gui_board, y, x):
                     center += 1
 
         # 오목되는지 체크
-        if make_five_row(line):
+        make_five_check = make_five_row(line)
+        if make_five_check >= 2:
+            return True
+        elif make_five_check == 1:
             four_cnt += 1
-            if four_cnt >= 2: return True
+        
+        if four_cnt >= 2: return True
+
+        # TODO: 한줄에 4-4 2개 만들어지는 경우 체크
     return False
+
+# # 받은 리스트에서 오목을 만들 수 있는지 확인
+# def make_five_row(line):
+#     total_count = 0
+#     for i in range(len(line)):
+#         if line[i] == 0:
+#             line[i] = 1
+#             count = 0
+#             for stone in line:
+#                 if stone == 1:
+#                     count += 1
+#                     if count == 5:
+#                         total_count += 1
+#                 else:
+#                     count = 0
+#             line[i] = 0
+#     return total_count
 
 # 받은 리스트에서 오목을 만들 수 있는지 확인
 def make_five_row(line):
-    for i in range(len(line)):
-        if line[i] == 0:
-            line[i] = 1
-            count = 0
-            for stone in line:
-                if stone == 1:
-                    count += 1
-                    if count == 5:
-                        return True
-                else:
-                    count = 0
-            line[i] = 0
-    return False
+    if len(line) < 6:
+        return 0
+    total_count = 0
+    for i in range(0, len(line) - 4):
+        zero_count = 0
+        # starting 부터 5개 체크
+        for j in range(i, i + 5, 1):
+            if line[j] == 0:
+                zero_count += 1
+            if zero_count >= 2: 
+                total_count += 1
+                i += 1
+                break
+
+    return total_count
+            
+        
+                
+
+        
+           
+    return total_count
 
 # 장목 확인
 # 4방향 확인해서 돌이 6개 이상 인지 확인

@@ -35,6 +35,7 @@ class GomokuBoard(QWidget):
         painter = QPainter(self)
         # antialiasing to make lines smoother
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # painter.setBackground(Qt.GlobalColor.white)
 
         #################################################################
         # TODO : using image backgounrd
@@ -77,7 +78,7 @@ class GomokuBoard(QWidget):
                 overline_check = is_overline(self.board, row, col)
 
             # TODO : if not is_double_four(self.board, row,col):
-            if not is_double_three(self.board, row, col, self.current_player) and not overline_check:
+            if not is_double_three(self.board, row, col, self.current_player) and not overline_check and not is_double_four(self.board, row,col):
             # if True:
                 self.board[row][col] = self.current_player
                 self.update()
@@ -89,9 +90,9 @@ class GomokuBoard(QWidget):
                 # check for invalid move
                 elif rule_check == "invalid move":
                     print("Invalid move")
-                
-                self.current_player = -1 if self.current_player == 1 else 1
-                self.update()
+                else:
+                    self.current_player = -1 if self.current_player == 1 else 1
+                    self.update()
             else:
                 print("Invalid move")
             # self.update()
@@ -101,6 +102,7 @@ class GomokuBoard(QWidget):
     def clearBoard(self):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
         self.current_player = 1  
+        print(self.current_player)
         self.update()
 
 

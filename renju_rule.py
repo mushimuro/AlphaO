@@ -248,26 +248,32 @@ def is_double_four(gui_board, y, x):
 def make_five_row(line):
     if len(line) < 6:
         return 0
+
     total_count = 0
+    before_find = False
     for i in range(0, len(line) - 4):
+        if before_find:
+            before_find = False
+            continue
+        cnt = 0
         zero_count = 0
         # starting 부터 5개 체크
-        for j in range(i, i + 5, 1):
+        for j in range(i, i + 6, 1):
+            if j >= len(line): break
             if line[j] == 0:
                 zero_count += 1
-            if zero_count >= 2: 
-                total_count += 1
-                i += 1
+                cnt += 1
+            elif line[j] == 1:
+                cnt += 1
+            if zero_count >= 2:
                 break
+        if cnt == 5:
+            total_count += 1
+            before_find = True
 
     return total_count
             
-        
-                
 
-        
-           
-    return total_count
 
 # 장목 확인
 # 4방향 확인해서 돌이 6개 이상 인지 확인

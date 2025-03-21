@@ -146,7 +146,6 @@ def check_prohibit_point(gui_board, ban):
             ban.remove(i)
 
 
-# TODO 한줄에 4-4 나오는거 추가
 # 8방향에서 흑돌, 첫번째 공백만 담는 리스트 생성
 # 그 리스트에서 오목을 만들 수 있는지 확인
 # 오목을 2개 이상 만들 수 있으면 4-4로 간주하고 리턴
@@ -180,23 +179,6 @@ def is_double_four(gui_board, y, x):
                     center += 1
 
     return False
-
-# # 받은 리스트에서 오목을 만들 수 있는지 확인
-# def make_five_row(line):
-#     total_count = 0
-#     for i in range(len(line)):
-#         if line[i] == 0:
-#             line[i] = 1
-#             count = 0
-#             for stone in line:
-#                 if stone == 1:
-#                     count += 1
-#                     if count == 5:
-#                         total_count += 1
-#                 else:
-#                     count = 0
-#             line[i] = 0
-#     return total_count
 
 # 받은 리스트에서 오목을 만들 수 있는지 확인
 def make_five_row(line):

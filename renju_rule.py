@@ -322,7 +322,7 @@ def is_double_three(board, y, x, color):
                 else:
                     break
                     
-                if empty_cnt > 2 or stone_cnt > 3:
+                if empty_cnt >= 2 or stone_cnt > 2:
                     break
             
             # 오픈3 패턴 체크
@@ -342,7 +342,7 @@ def is_double_three(board, y, x, color):
                                 consecutive = 0
                                 
                         # 불연속 패턴: ○●●○●○, ○●○●●○
-                        if max_consecutive >= 2 or '0110' in ''.join(map(str, line)) or '1010' in ''.join(map(str, line)) or '10110' in ''.join(map(str, line)):
+                        if max_consecutive >= 2 or '0110' in ''.join(map(str, line)) or '1010' in ''.join(map(str, line)):
                             open_three = True
                             break
         

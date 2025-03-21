@@ -26,7 +26,7 @@ class GomokuBoard(QWidget):
         # TODO ??? self.setFixedSize(self.sizeHint())
         # TODO : using image background, need to work on making exact placements
         # self.board_image = QPixmap(os.path.join(os.path.dirname(__file__), "board_img.png"))
-        self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "white_background.png"))
+        # self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "white_background.png"))
         #################################################################
     
 
@@ -35,12 +35,12 @@ class GomokuBoard(QWidget):
         painter = QPainter(self)
         # antialiasing to make lines smoother
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBackground(Qt.GlobalColor.white)
+        # painter.setBackground(Qt.GlobalColor.white)
 
         #################################################################
         # TODO : using image backgounrd
-        scaled_board = self.background_img.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
-        painter.drawPixmap(0, 0, scaled_board)
+        # scaled_board = self.background_img.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
+        # painter.drawPixmap(0, 0, scaled_board)
         # QPixmap::scaled: Pixmap is a null pixmap
         #################################################################
 
@@ -90,9 +90,9 @@ class GomokuBoard(QWidget):
                 # check for invalid move
                 elif rule_check == "invalid move":
                     print("Invalid move")
-                
-                self.current_player = -1 if self.current_player == 1 else 1
-                self.update()
+                else:
+                    self.current_player = -1 if self.current_player == 1 else 1
+                    self.update()
             else:
                 print("Invalid move")
             # self.update()

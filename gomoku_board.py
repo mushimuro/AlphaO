@@ -74,11 +74,12 @@ class GomokuBoard(QWidget):
         if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] == 0:
             # 6+ stones check
             overline_check = False
+            double_four_check = False
             if self.current_player == 1:
                 overline_check = is_overline(self.board, row, col)
+                double_four_check = is_double_four(self.board, row,col)
 
-            # TODO : if not is_double_four(self.board, row,col):
-            if not is_double_three(self.board, row, col, self.current_player) and not overline_check and not is_double_four(self.board, row,col):
+            if not is_double_three(self.board, row, col, self.current_player) and not overline_check and not double_four_check:
             # if True:
                 self.board[row][col] = self.current_player
                 self.update()

@@ -82,26 +82,8 @@ def pre_check(gui_board, y, x, color):
 
     # 좌측 상단 + 우측 하단 대각선
     if (gui_board[max(0, y - 1)][max(0, x - 1)] == color) or (gui_board[min(14, y + 1)][min(14, x + 1)] == color):
-        if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and board[y-1][x-1] == color)):
-            xrange = [max(0, x-5), min(15, x+6)]
-            yrange = [max(0, y - 5), min(15, y + 6)]
-
-            y_lower_range = yrange[0] - y    # negative val
-            y_upper_range = yrange[-1] - y   # positive val
-            x_lower_range = xrange[0] - x
-            x_upper_range = xrange[-1] - x
-
-            if y_lower_range < x_lower_range:
-                lower_range = x_lower_range
-            else:
-                lower_range = y_lower_range
-
-            if y_upper_range > x_upper_range:
-                upper_range = x_upper_range
-            else:
-                upper_range = y_upper_range
-
-            for i in range(lower_range , upper_range , 1):
+        if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and gui_board[y-1][x-1] == color)):
+            for i in range(-5 , 6 , 1):
                 # double checks index out of bound error
                 if 0 <= y + i < 15 and 0 <= x + i < 15:
                     line.append(gui_board[y+i][x+i])
@@ -110,29 +92,11 @@ def pre_check(gui_board, y, x, color):
 
     # 좌측 하단 + 우측 상단
     if (gui_board[min(14, y + 1)][max(0, x - 1)] == color) or (gui_board[max(0, y - 1)][min(14, x + 1)] == color):
-        if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and gui_board[y-1][x+1]) or ((y == 0 or x == 14) and board[y+1][x-1])):
-            xrange = [max(0, x-5), min(15, x+6)]
-            yrange = [max(0, y - 5), min(15, y + 6)]
-
-            y_lower_range = yrange[0] - y    # negative val
-            y_upper_range = yrange[-1] - y   # positive val
-            x_lower_range = xrange[0] - x
-            x_upper_range = xrange[-1] - x
-
-            if y_lower_range < x_lower_range:
-                lower_range = x_lower_range
-            else:
-                lower_range = y_lower_range
-
-            if y_upper_range > x_upper_range:
-                upper_range = x_upper_range
-            else:
-                upper_range = y_upper_range
-
-            for i in range(lower_range , upper_range , 1):
+        if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and gui_board[y-1][x+1]) or ((y == 0 or x == 14) and gui_board[y+1][x-1])):
+            for i in range(-5 , 6 , 1):
                 # double checks index out of bound error
                 if 0 <= y + i < 15 and 0 <= x - i < 15:
-                    line.append(gui_board[y+i][x-i])
+                  line.append(gui_board[y+i][x-i])
             # check for 5-win
             if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
 
@@ -158,15 +122,15 @@ def find_prohibit_point(gui_board, y, x):
                     break
 
                 # Empty
-                if board[cur_y][cur_x] == 0:
+                if gui_board[cur_y][cur_x] == 0:
                     empty += 1
                     if is_double_three(gui_board, cur_y, cur_x) or is_double_four(gui_board, cur_y, cur_x) or is_overline(gui_board, cur_y,cur_x):
                         ban.append({cur_y, cur_x})
                 # Black
-                elif board[cur_y][cur_x] == 1:
+                elif gui_board[cur_y][cur_x] == 1:
                     cnt += 1
                 # White
-                elif board[cur_y][cur_x] == -1:
+                elif gui_board[cur_y][cur_x] == -1:
                     break
 
                 cur_y, cur_x = y + list_dy[j * 2 + i], x + list_dx[j * 2 + i]
@@ -182,7 +146,6 @@ def check_prohibit_point(gui_board, ban):
             ban.remove(i)
 
 
-# TODO 한줄에 4-4 나오는거 추가
 # 8방향에서 흑돌, 첫번째 공백만 담는 리스트 생성
 # 그 리스트에서 오목을 만들 수 있는지 확인
 # 오목을 2개 이상 만들 수 있으면 4-4로 간주하고 리턴
@@ -215,34 +178,7 @@ def is_double_four(gui_board, y, x):
                     line.insert(0, gui_board[cur_y][cur_x])
                     center += 1
 
-        # 오목되는지 체크
-        make_five_check = make_five_row(line)
-        if make_five_check >= 2:
-            return True
-        elif make_five_check == 1:
-            four_cnt += 1
-        
-        if four_cnt >= 2: return True
-
-        # TODO: 한줄에 4-4 2개 만들어지는 경우 체크
     return False
-
-# # 받은 리스트에서 오목을 만들 수 있는지 확인
-# def make_five_row(line):
-#     total_count = 0
-#     for i in range(len(line)):
-#         if line[i] == 0:
-#             line[i] = 1
-#             count = 0
-#             for stone in line:
-#                 if stone == 1:
-#                     count += 1
-#                     if count == 5:
-#                         total_count += 1
-#                 else:
-#                     count = 0
-#             line[i] = 0
-#     return total_count
 
 # 받은 리스트에서 오목을 만들 수 있는지 확인
 def make_five_row(line):

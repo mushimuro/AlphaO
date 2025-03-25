@@ -3,6 +3,10 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from renju_rule import *
+import time
+from ai_training.minimax import Minimax
+from renju_rule import check_if_win
+
 
 # default size for board and stone
 BOARD_SIZE = 15
@@ -17,6 +21,10 @@ class GomokuBoard(QWidget):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
         self.current_player = 1
         self.parent_widget = parent
+
+        # self.ai_model = "minimax_model"
+        self.ai = Minimax(depth=2)
+        self.is_ai_turn = False
         
         # TODO : make the size to be flexible : if window becomes smaller, the board scales down too
         self.setFixedSize(BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE)
@@ -64,39 +72,38 @@ class GomokuBoard(QWidget):
                     y = row * CELL_SIZE + CELL_SIZE // 2
                     painter.drawEllipse(QPoint(x, y), STONE_SIZE, STONE_SIZE)
 
+
     # placing stones
     def mousePressEvent(self, event):
         x, y = event.position().x(), event.position().y()
         col = int(x // CELL_SIZE)   # x-value
         row = int(y // CELL_SIZE)   # y-value
 
-        # checking if open spot to place
-        if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE and self.board[row][col] == 0:
-            # 6+ stones check
-            overline_check = False
-            double_four_check = False
-            if self.current_player == 1:
-                overline_check = is_overline(self.board, row, col)
-                double_four_check = is_double_four(self.board, row,col)
+        if self.is_valid_move(row, col):
+            self.board[row][col] = self.current_player
+            self.update()
 
-            if not is_double_three(self.board, row, col, self.current_player) and not overline_check and not double_four_check:
-            # if True:
-                self.board[row][col] = self.current_player
-                self.update()
-                rule_check = pre_check(self.board, row, col, self.current_player)
-                # check for win
-                if rule_check == "win":
-                    winner_color = "Black" if self.current_player == 1 else "White"
-                    self.game_over_signal.emit(winner_color)
-                # check for invalid move
-                elif rule_check == "invalid move":
-                    print("Invalid move")
-                else:
-                    self.current_player = -1 if self.current_player == 1 else 1
-                    self.update()
-            else:
-                print("Invalid move")
-            # self.update()
+            # check for win
+            if check_if_win(self.board, row, col, self.current_player):
+                winner_color = "Black" if self.current_player == 1 else "White"
+                self.game_over_signal.emit(winner_color)
+                self.is_ai_turn = False
+                return
+            # else:
+            self.current_player = -1
+            self.is_ai_turn = True
+
+        # ai_turn to place stone (currently white only)
+        if self.is_ai_turn:
+            start_time = time.time()
+            self.ai_move()
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"AI move execution time: {execution_time:.6f} seconds")
+
+            self.current_player = 1
+            self.is_ai_turn = False
+
 
 
     # creates new board when a game ends
@@ -118,6 +125,56 @@ class GomokuBoard(QWidget):
             if self.parent_widget:
                 self.parent_widget.stacked_widget.setCurrentWidget(self.parent_widget.main_page)
                 self.clearBoard()
+
+
+    def ai_move(self):
+        """Execute AI move"""
+        # if self.is_ai_turn and self.is_ai_enabled:
+        # QApplication.processEvents()  # Allow GUI to update
+        move = self.ai.get_best_move(self.board, self.current_player)
+        print(move)
+        if move:
+            row, col = move
+            if self.is_valid_move(row, col):
+                self.board[row][col] = self.current_player
+                # self.update()
+                
+                if check_if_win(self.board, row, col, self.current_player):
+                    winner_color = "Black" if self.current_player == 1 else "White"
+                    self.game_over_signal.emit(winner_color)
+                    self.is_ai_turn = False
+                    return
+                else:
+                    self.current_player = -1 # if self.current_player == 1 else 1
+                    self.is_ai_turn = False
+
+        
+    def run_ai_move(self):
+        """Execute AI move separately after UI updates."""
+        if self.is_ai_turn:
+            start_time = time.time()
+            self.ai_move()
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"AI move execution time: {execution_time:.6f} seconds")
+
+            self.is_ai_turn = False
+            
+
+    def is_valid_move(self, row, col):
+        """Check if move is valid according to game rules"""
+        if not (0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE):
+            return False
+        if self.board[row][col] != 0:
+            return False
+            
+        # Check renju rules for black
+        if self.current_player == 1:
+            if (is_double_three(self.board, row, col, self.current_player) or 
+                is_double_four(self.board, row, col) or 
+                is_overline(self.board, row, col)):
+                return False
+        return True
 
 
 if __name__ == '__main__':

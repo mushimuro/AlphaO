@@ -53,26 +53,9 @@ class Main(QDialog):
         # start_button_widget.clicked.connect(self.start_game)
         start_button_widget.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_page))
 
-<<<<<<< Updated upstream
         # choose level difficulty
         level_widget = QComboBox()
         level_widget.addItems(["Choose model", "Minimax", "MCTS", "DL"])
-=======
-        # Game mode selection
-        self.game_mode = QComboBox()
-        self.game_mode.addItems(["Player vs Player", "Player vs AI"])
-        layout1.addWidget(self.game_mode)
-
-        # choose level difficulty (for AI mode)
-        self.level_widget = QComboBox()
-        self.level_widget.addItems(["Easy (Depth 2)", "Medium (Depth 3)", "Hard (Depth 4)"])
-        self.level_widget.setEnabled(False)  # Initially disabled
-        layout1.addWidget(self.level_widget)
-
-        # Enable/disable difficulty based on game mode
-        self.game_mode.currentTextChanged.connect(self.on_game_mode_changed)
-
->>>>>>> Stashed changes
         # choose white/black stone
         # TODO : 컴퓨터랑 사람이랑 턴제로 하는데, 사람이 색 선택시... function 만들기
         self.radio_white = QRadioButton("White")

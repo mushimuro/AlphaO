@@ -340,7 +340,7 @@ def is_double_three(board, y, x, color):
                 if empty_cnt >= 2 or stone_cnt > 2:
                     break
 
-            if is_open_three_line(line):
+            if open_three(line):
                 open_three = True
                 break
 

@@ -56,7 +56,6 @@ class Main(QDialog):
         # choose level difficulty
         level_widget = QComboBox()
         level_widget.addItems(["Choose model", "Minimax", "MCTS", "DL"])
-
         # choose white/black stone
         # TODO : 컴퓨터랑 사람이랑 턴제로 하는데, 사람이 색 선택시... function 만들기
         self.radio_white = QRadioButton("White")

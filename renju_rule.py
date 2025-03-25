@@ -241,11 +241,46 @@ def is_overline(gui_board, y,x):
             return True
 
     return False
+    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
+def open_three(line: list) -> bool:
+    """
+    주어진 line 리스트가 열린 삼 패턴(33 패턴)에 해당하는지 판단합니다.
+    조건:
+      1. line 길이가 최소 4 이상이어야 함.
+      2. 양쪽 끝이 0이어야 함.
+      3. 전체 돌의 개수가 정확히 3개여야 함.
+      4. 연속된 돌의 최대 길이가 2 이상이거나, 
+         문자열 '0110' 또는 '1010' 패턴이 존재하면 열린 삼으로 판단.
+    """
+    if len(line) < 4:
+        return False
+    if line[0] != 0 or line[-1] != 0:
+        return False
+    if sum(1 for s in line if s == 1) != 3:
+        return False
+
+    consecutive = 0
+    max_consecutive = 0
+    for stone in line:
+        if stone == 1:
+            consecutive += 1
+            max_consecutive = max(max_consecutive, consecutive)
+        else:
+            consecutive = 0
+    if max_consecutive >= 2:
+        return True
+
+    line_str = ''.join(map(str, line))
+    if '0110' in line_str or '1010' in line_str:
+        return True
+
+    return False
 
 def is_double_three(board, y, x, color):
     if color != 1:
         return False
-    
+
     cnt = 0
     gui_board = copy.deepcopy(board)
     gui_board[y][x] = 1
@@ -256,43 +291,43 @@ def is_double_three(board, y, x, color):
             idx = direction * 2 + i
             yy, xx = list_dy[idx], list_dx[idx]
             ny, nx = y, x
-            
-            # 한쪽 방향 탐색
+
             line = [1]  # 현재 위치의 돌
             empty_cnt = 0
             stone_cnt = 0
-            
+
+            # 한쪽 방향 탐색
             while True:
                 ny += yy
                 nx += xx
-                
-                if is_invalid(ny, nx):
+
+                if is_invalid(ny, nx):  # 기존의 is_invalid 함수 사용
                     break
-                    
+
                 if gui_board[ny][nx] == 0:
                     line.append(0)
                     empty_cnt += 1
                 elif gui_board[ny][nx] == 1:
                     line.append(1)
                     stone_cnt += 1
-                else:  # 백돌이면 중단
+                else:
                     break
-                    
-                if empty_cnt >= 2 or stone_cnt > 2:  # 빈칸이나 돌이 너무 많으면 중단
+
+                if empty_cnt >= 2 or stone_cnt > 2:
                     break
-            
+
             # 반대 방향 탐색
             ny, nx = y, x
             empty_cnt = 0
             stone_cnt = 0
-            
+
             while True:
                 ny -= yy
                 nx -= xx
-                
-                if is_invalid(ny, nx):
+
+                if is_invalid(ny, nx):  # 기존의 is_invalid 함수 사용
                     break
-                    
+
                 if gui_board[ny][nx] == 0:
                     line.insert(0, 0)
                     empty_cnt += 1
@@ -301,31 +336,14 @@ def is_double_three(board, y, x, color):
                     stone_cnt += 1
                 else:
                     break
-                    
+
                 if empty_cnt >= 2 or stone_cnt > 2:
                     break
-            
-            # 오픈3 패턴 체크
-            if len(line) >= 4:  # 최소 4칸 이상
-                # 33 패턴들
-                if (line[0] == 0 and line[-1] == 0):  # 양쪽이 열려있어야 함
-                    stone_count = sum(1 for s in line if s == 1)
-                    if stone_count == 3:  # 돌이 정확히 3개
-                        # 연속 패턴: ○●●●○
-                        consecutive = 0
-                        max_consecutive = 0
-                        for stone in line:
-                            if stone == 1:
-                                consecutive += 1
-                                max_consecutive = max(max_consecutive, consecutive)
-                            else:
-                                consecutive = 0
-                                
-                        # 불연속 패턴: ○●●○●○, ○●○●●○
-                        if max_consecutive >= 2 or '0110' in ''.join(map(str, line)) or '1010' in ''.join(map(str, line)):
-                            open_three = True
-                            break
-        
+
+            if is_open_three_line(line):
+                open_three = True
+                break
+
         if open_three:
             cnt += 1
             if cnt >= 2:

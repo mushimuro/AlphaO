@@ -26,7 +26,11 @@ class Minimax:
         """
         score = 0
         opponent = -color
+<<<<<<< Updated upstream
                             # a, b, c, d : 1000, e : 10000 - 9000, f : 1000 - 800, g : 800
+=======
+
+>>>>>>> Stashed changes
         # Winning patterns
         if window.count(color) == 5:
             score += 100000
@@ -122,8 +126,13 @@ class Minimax:
                                 continue
                         valid_moves.append((i, j))
                         
+<<<<<<< Updated upstream
         # print(valid_moves)
         # print("-----------------------------------------------")
+=======
+        print(valid_moves)
+        print("-----------------------------------------------")
+>>>>>>> Stashed changes
         return valid_moves
 
     def minimax(self, board: List[List[int]], depth: int, alpha: float, beta: float, 
@@ -141,8 +150,13 @@ class Minimax:
             Tuple of (score, best_move)
         """
         # Check for terminal states
+<<<<<<< Updated upstream
         result = check_if_win(board, -1, -1, color)  # Using -1,-1 as dummy coordinates
         if result:
+=======
+        result = pre_check(board, -1, -1, color)  # Using -1,-1 as dummy coordinates
+        if result == "win":
+>>>>>>> Stashed changes
             return (100000 if maximizing_player else -100000), None
         
         if depth == 0:

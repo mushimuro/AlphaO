@@ -15,3 +15,33 @@ if ((y != 0 or x!= 0) and board[max(0, y - 1)][max(0, x - 1)] == color) or ((y !
         line.append(board[y+i][x+i])
     # check for 5-win
     #if check_list_five(color, line): return True
+
+
+
+        # placing stones
+    def mousePressEvent(self, event):
+        x, y = event.position().x(), event.position().y()
+        col = int(x // CELL_SIZE)   # x-value
+        row = int(y // CELL_SIZE)   # y-value
+
+        if self.is_valid_move(row, col):
+            self.board[row][col] = self.current_player
+            self.update()
+
+            # check for win
+            if check_if_win(self.board, row, col, self.current_player):
+                winner_color = "Black" if self.current_player == 1 else "White"
+                self.game_over_signal.emit(winner_color)
+            else:
+                self.current_player = -1 if self.current_player == 1 else 1
+                self.is_ai_turn = True if self.current_player == -1 else False
+                # self.update()
+
+        if self.is_ai_turn:
+            start_time = time.time()
+            self.ai_move()
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"AI move execution time: {execution_time:.6f} seconds")
+
+            self.is_ai_turn = False

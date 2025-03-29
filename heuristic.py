@@ -1,4 +1,6 @@
+import copy
 import random
+from renju_rule import pre_check, three, open_three, four, open_four, board, ban
 
 BOARD_SIZE = 15
 
@@ -8,16 +10,17 @@ def heuristic_evaluation(state, move):
     기본 휴리스틱 평가 함수:
     - move 위치의 8방향 인접 셀 중, 현재 플레이어의 돌이 몇 개 있는지 셉니다.
     """
-    r, c = move
-    score = 0
+    y, x = move
+    bonus = 0
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1),
                   (-1, -1), (-1, 1), (1, -1), (1, 1)]
-    for dr, dc in directions:
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < BOARD_SIZE and 0 <= nc < BOARD_SIZE:
-            if state.board[nr][nc] == state.current_player:
-                score += 1
-    return score
+    for dy, dx in directions:
+        ny, nx = y + dy, x + dx
+        if 0 <= ny < BOARD_SIZE and 0 <= nx < BOARD_SIZE:
+            if state.board[ny][nx] == state.current_player:
+                bonus += 1
+    return bonus
+
 
 
 def threat_blocking_score(state, move):
@@ -27,39 +30,50 @@ def threat_blocking_score(state, move):
 
     4가지 주요 방향(수평, 수직, 두 대각선)마다 검사하여 각 방향의 bonus를 합산합니다.
     """
-    opponent = -state.current_player
-    r, c = move
+    # 중요도 순서
+    # current_player 가 흑돌에 금수 위치(-100,000)
+    # 내가 돌을 놓으면 5 (100,000)
+    # 상대가 4 (49,000)
+    # 내가 돌을 놓으면 open4 (24,000)
+    # 내가 돌을 놓으면 4 (10,000)
+    # 상대가 open3 (4,000)
+    # 상대가 3 (1,000)
+    # 내가 돌을 놓으면 open3 (400)
+    # 내가 돌을 놓으면 3 (100)
+    # 인접 8방에 돌이 있으면 (1) -> heuristic_evaluation
+
+    copy_board = copy.deepcopy(board)
+    current_player = state.cureent_player
+    opponent = -current_player
+    y, x = move
     bonus = 0
-    # 4방향: 수평, 수직, 두 대각선
-    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-    for dr, dc in directions:
-        count_pos = 0
-        nr, nc = r + dr, c + dc
-        # positive direction: 연속된 상대 돌 개수
-        while 0 <= nr < BOARD_SIZE and 0 <= nc < BOARD_SIZE and state.board[nr][nc] == opponent:
-            count_pos += 1
-            nr += dr
-            nc += dc
-        # positive direction open 여부: while문 종료 후 nr,nc 범위 내이고 빈 칸이면 open
-        open_pos = (0 <= nr < BOARD_SIZE and 0 <= nc < BOARD_SIZE and state.board[nr][nc] == 0)
 
-        count_neg = 0
-        nr, nc = r - dr, c - dc
-        # negative direction: 연속된 상대 돌 개수
-        while 0 <= nr < BOARD_SIZE and 0 <= nc < BOARD_SIZE and state.board[nr][nc] == opponent:
-            count_neg += 1
-            nr -= dr
-            nc -= dc
-        open_neg = (0 <= nr < BOARD_SIZE and 0 <= nc < BOARD_SIZE and state.board[nr][nc] == 0)
+    # 금수?
+    if current_player == 1 and (y,x) in ban: return -100000
 
-        total = count_pos + count_neg
-        # 만약 총 연속 상대 돌이 3개 이상이면 큰 보너스 추가
-        if total >= 3:
-            bonus += 10000
-        # 2개이고 한쪽 이상이 open이면 약한 위협으로 간주하여 보너스 추가
-        elif total == 2 and (open_pos or open_neg):
-            bonus += 5000
+    # 내가 돌을 두면?
+    copy_board[y][x] = current_player
+    if pre_check(copy_board, y, x, current_player) == "win" : return 100000
+    if open_four(y, x, current_player): bonus += 24000
+    if four(y, x, current_player): bonus += 10000
+    if open_three(y, x, current_player): bonus += 400
+    if three(y, x, current_player): bonus += 100
+    copy_board[y][x] = 0
+
+    # 상대가 4?
+    if four(y,x, opponent):
+        bonus += 49000
+
+    # 상대가 open3?
+    if open_three(y, x, opponent):
+        bonus += 4000
+
+    # 상대가 3?
+    if three(y, x, opponent):
+        bonus += 1000
+
     return bonus
+
 
 
 def heuristic_policy(state):

@@ -68,6 +68,7 @@ def check_if_win(gui_board, y, x, color):
     if (gui_board[y][max(0,x-1)] == color) or (gui_board[y][min(14,x+1)] == color):
         # normal case or edge cases
         if ((x != 14 and x != 0) or (x == 14 and gui_board[y][x-1] == color) or (x == 0 and gui_board[y][x+1] == color)):
+            line = []  # reset line list
             for i in range(max(0, x-5), min(15, x+6), 1):
                 # double checks index out of bound error
                 if 0 <= y < 15 and 0 <= i < 15:
@@ -78,6 +79,7 @@ def check_if_win(gui_board, y, x, color):
     # 세로줄 (14,12)
     if (gui_board[max(0, y - 1)][x] == color) or (gui_board[min(14, y + 1)][x] == color):
         if ((y != 14 and y != 0) or (y == 14 and gui_board[y-1][x] == color) or (y == 0 and gui_board[y+1][x] == color)):
+            line = []  # reset line list
             for i in range(max(0, y - 5), min(15, y + 6), 1):
                 if 0 <= i < 15 and 0 <= x < 15:
                     line.append(gui_board[i][x])
@@ -89,6 +91,7 @@ def check_if_win(gui_board, y, x, color):
     # 좌측 상단 + 우측 하단 대각선
     if (gui_board[max(0, y - 1)][max(0, x - 1)] == color) or (gui_board[min(14, y + 1)][min(14, x + 1)] == color):
         # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and gui_board[y-1][x-1] == color)):
+        line = []  # reset line list
         for i in range(-5 , 6 , 1):
             # double checks index out of bound error
             if 0 <= y + i < 15 and 0 <= x + i < 15:
@@ -99,6 +102,7 @@ def check_if_win(gui_board, y, x, color):
     # 좌측 하단 + 우측 상단
     if (gui_board[min(14, y + 1)][max(0, x - 1)] == color) or (gui_board[max(0, y - 1)][min(14, x + 1)] == color):
         # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and gui_board[y-1][x+1]) or ((y == 0 or x == 14) and gui_board[y+1][x-1])):
+        line = []  # reset line list
         for i in range(-5 , 6 , 1):
             # double checks index out of bound error
             if 0 <= y + i < 15 and 0 <= x - i < 15:

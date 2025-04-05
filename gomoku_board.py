@@ -89,21 +89,12 @@ class GomokuBoard(QWidget):
                 self.game_over_signal.emit(winner_color)
                 self.is_ai_turn = False
                 return
-            # else:
+            
+            # self.current_player = -self.current_player
             self.current_player = -1
             self.is_ai_turn = True
 
-        # ai_turn to place stone (currently white only)
-        if self.is_ai_turn:
-            start_time = time.time()
-            self.ai_move()
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"AI move execution time: {execution_time:.6f} seconds")
-
-            self.current_player = 1
-            self.is_ai_turn = False
-
+            QTimer.singleShot(100, self.run_ai_move)
 
 
     # creates new board when a game ends
@@ -148,18 +139,20 @@ class GomokuBoard(QWidget):
                     self.current_player = -1 # if self.current_player == 1 else 1
                     self.is_ai_turn = False
 
-        
-    def run_ai_move(self):
-        """Execute AI move separately after UI updates."""
-        if self.is_ai_turn:
-            start_time = time.time()
-            self.ai_move()
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"AI move execution time: {execution_time:.6f} seconds")
-
-            self.is_ai_turn = False
             
+    def run_ai_move(self):
+        if not self.is_ai_turn:
+            return
+
+        start_time = time.time()
+        self.ai_move()
+        end_time = time.time()
+        print(f"AI move execution time: {end_time - start_time:.6f} seconds")
+
+        self.current_player = 1
+        self.is_ai_turn = False
+        self.update()
+
 
     def is_valid_move(self, row, col):
         """Check if move is valid according to game rules"""

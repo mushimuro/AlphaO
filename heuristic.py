@@ -1,9 +1,10 @@
 import copy
 import random
-from renju_rule import pre_check, three, open_three, four, open_four, board, ban
+from renju_rule import pre_check, three, open_three, four, open_four, board, ban, is_invalid
 
 BOARD_SIZE = 15
-
+list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
+list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
 
 def heuristic_evaluation(state, move):
     """
@@ -33,7 +34,7 @@ def threat_blocking_score(state, move):
     # 중요도 순서
     # current_player 가 흑돌에 금수 위치(-100,000)
     # 내가 돌을 놓으면 5 (100,000)
-    # 상대가 4 (49,000)
+    # 상대가 4, open4 (49,000)
     # 내가 돌을 놓으면 open4 (24,000)
     # 내가 돌을 놓으면 4 (10,000)
     # 상대가 open3 (4,000)
@@ -51,26 +52,131 @@ def threat_blocking_score(state, move):
     # 금수?
     if current_player == 1 and (y,x) in ban: return -100000
 
-    # 내가 돌을 두면?
+    # 나한테 유리한지 판단
+    # 좌우, 상하, 양대각선을 받아서 체크
     copy_board[y][x] = current_player
-    if pre_check(copy_board, y, x, current_player) == "win" : return 100000
-    if open_four(y, x, current_player): bonus += 24000
-    if four(y, x, current_player): bonus += 10000
-    if open_three(y, x, current_player): bonus += 400
-    if three(y, x, current_player): bonus += 100
+    for direction in range(4):
+        open_pattern_found = False
+        for i in range(2):
+            idx = direction * 2 + i
+            yy, xx = list_dy[idx], list_dx[idx]
+            ny, nx = y, x
+
+            # 한쪽 방향 탐색
+            line = [1]  # 시작점 돌(이미 놓은 돌)
+            empty_cnt = 0
+            stone_cnt = 0
+
+            while True:
+                ny += yy
+                nx += xx
+
+                if is_invalid(ny, nx):
+                    break
+
+                if copy_board[ny][nx] == 0:
+                    line.append(0)
+                    empty_cnt += 1
+                elif copy_board[ny][nx] == 1:
+                    line.append(1)
+                    stone_cnt += 1
+                else:  # 백돌이면 중단
+                    break
+
+                if empty_cnt >= 2 or stone_cnt > 2:
+                    break
+
+            # 반대 방향 탐색
+            ny, nx = y, x
+            empty_cnt = 0
+            stone_cnt = 0
+
+            while True:
+                ny -= yy
+                nx -= xx
+
+                if is_invalid(ny, nx):
+                    break
+
+                if copy_board[ny][nx] == 0:
+                    line.insert(0, 0)
+                    empty_cnt += 1
+                elif copy_board[ny][nx] == 1:
+                    line.insert(0, 1)
+                    stone_cnt += 1
+                else:
+                    break
+
+                if empty_cnt >= 2 or stone_cnt > 2:
+                    break
+        # 내가 5, open4, 4, open3, 3 인지 판단
+        if pre_check(copy_board, y, x, current_player) == "win" : return 100000
+        if open_four(y, x, current_player): bonus += 24000
+        if four(y, x, current_player): bonus += 10000
+        if open_three(y, x, current_player): bonus += 400
+        if three(y, x, current_player): bonus += 100
     copy_board[y][x] = 0
 
-    # 상대가 4?
-    if four(y,x, opponent):
-        bonus += 49000
+    # 위험도 판단
+    # 좌우, 상하, 양대각선을 받아서 체크
+    for direction in range(4):
+        open_pattern_found = False
+        for i in range(2):
+            idx = direction * 2 + i
+            yy, xx = list_dy[idx], list_dx[idx]
+            ny, nx = y, x
 
-    # 상대가 open3?
-    if open_three(y, x, opponent):
-        bonus += 4000
+            # 한쪽 방향 탐색
+            line = [1]  # 시작점 돌(이미 놓은 돌)
+            empty_cnt = 0
+            stone_cnt = 0
 
-    # 상대가 3?
-    if three(y, x, opponent):
-        bonus += 1000
+            while True:
+                ny += yy
+                nx += xx
+
+                if is_invalid(ny, nx):
+                    break
+
+                if copy_board[ny][nx] == 0:
+                    line.append(0)
+                    empty_cnt += 1
+                elif copy_board[ny][nx] == 1:
+                    line.append(1)
+                    stone_cnt += 1
+                else:  # 백돌이면 중단
+                    break
+
+                if empty_cnt >= 2 or stone_cnt > 2:
+                    break
+
+            # 반대 방향 탐색
+            ny, nx = y, x
+            empty_cnt = 0
+            stone_cnt = 0
+
+            while True:
+                ny -= yy
+                nx -= xx
+
+                if is_invalid(ny, nx):
+                    break
+
+                if copy_board[ny][nx] == 0:
+                    line.insert(0, 0)
+                    empty_cnt += 1
+                elif copy_board[ny][nx] == 1:
+                    line.insert(0, 1)
+                    stone_cnt += 1
+                else:
+                    break
+
+                if empty_cnt >= 2 or stone_cnt > 2:
+                    break
+        # 상대가 4, open4, 3, open3 면 가중치 업데이트
+        if four(y,x, opponent) or open_four(y,x, opponent): bonus += 49000
+        if open_three(y, x, opponent): bonus += 4000
+        if three(y, x, opponent): bonus += 1000
 
     return bonus
 

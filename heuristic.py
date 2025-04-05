@@ -1,6 +1,7 @@
 import copy
 import random
-from renju_rule import pre_check, three, open_three, four, open_four, board, ban, is_invalid
+# from renju_rule import pre_check, three, open_three, four, open_four, board, ban, is_invalid
+from renju_rule import board, ban, is_invalid
 
 BOARD_SIZE = 15
 list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
@@ -110,11 +111,11 @@ def threat_blocking_score(state, move):
                 if empty_cnt >= 2 or stone_cnt > 2:
                     break
         # 내가 5, open4, 4, open3, 3 인지 판단
-        if pre_check(copy_board, y, x, current_player) == "win" : return 100000
-        if open_four(y, x, current_player): bonus += 24000
-        if four(y, x, current_player): bonus += 10000
-        if open_three(y, x, current_player): bonus += 400
-        if three(y, x, current_player): bonus += 100
+        # if pre_check(copy_board, y, x, current_player) == "win" : return 100000
+        # if open_four(y, x, current_player): bonus += 24000
+        # if four(y, x, current_player): bonus += 10000
+        # if open_three(y, x, current_player): bonus += 400
+        # if three(y, x, current_player): bonus += 100
     copy_board[y][x] = 0
 
     # 위험도 판단
@@ -174,9 +175,9 @@ def threat_blocking_score(state, move):
                 if empty_cnt >= 2 or stone_cnt > 2:
                     break
         # 상대가 4, open4, 3, open3 면 가중치 업데이트
-        if four(y,x, opponent) or open_four(y,x, opponent): bonus += 49000
-        if open_three(y, x, opponent): bonus += 4000
-        if three(y, x, opponent): bonus += 1000
+        # if four(y,x, opponent) or open_four(y,x, opponent): bonus += 49000
+        # if open_three(y, x, opponent): bonus += 4000
+        # if three(y, x, opponent): bonus += 1000
 
     return bonus
 

@@ -11,7 +11,9 @@ list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
 
 
 
-# TODO: check if "self".board[][] needs to be applied to all methods
+# TODO: function to check - tie if no space left, white win if black cannot place
+def is_board_full(self, y, x):
+    return False
 
 # check if the spot is placeable(empty stone)
 def is_placeable(self, y, x):
@@ -55,90 +57,66 @@ def check_list(color, line):
     return False
 
 
-def pre_check(gui_board, y, x, color):
-    line = []
+def check_if_win(gui_board, y, x, color):
+    '''
+    checks for winning state
+    returns True if win, if not False
+    '''
 
     # 가로줄 ; This removes edge cases
-    if (gui_board[y][max(0,x-1)] == color) or (gui_board[y][min(14,x+1)] == color):
+    if (gui_board[y][max(0,x-1)] == color) or (gui_board[y][min(14,x+1)] == color):  # TODO: is this needed??
         # normal case or edge cases
-        # if ((x != 14 and x != 0) or (x == 14 and gui_board[y][x-1] == color) or (x == 0 and gui_board[y][x+1] == color)):
+        if ((x != 14 and x != 0) or (x == 14 and gui_board[y][x-1] == color) or (x == 0 and gui_board[y][x+1] == color)):
+            # checking line reset
+            line = []
             for i in range(max(0, x-5), min(15, x+6), 1):
                 # double checks index out of bound error
                 if 0 <= y < 15 and 0 <= i < 15:
                     line.append(gui_board[y][i])
             # check for 5-win
-            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
+            if check_list(color, line): return True
 
     # 세로줄 (14,12)
     if (gui_board[max(0, y - 1)][x] == color) or (gui_board[min(14, y + 1)][x] == color):
-        # if ((y != 14 and y != 0) or (y == 14 and gui_board[y-1][x] == color) or (y == 0 and gui_board[y+1][x] == color)):
+        if ((y != 14 and y != 0) or (y == 14 and gui_board[y-1][x] == color) or (y == 0 and gui_board[y+1][x] == color)):
+            # checking line reset
+            line = []
             for i in range(max(0, y - 5), min(15, y + 6), 1):
                 if 0 <= i < 15 and 0 <= x < 15:
                     line.append(gui_board[i][x])
             # check for 5-win
             check = check_list(color, line)
             if check:
-                return "win"   # TODO : change return "checked" -> return True
+                return True
 
     # 좌측 상단 + 우측 하단 대각선
     if (gui_board[max(0, y - 1)][max(0, x - 1)] == color) or (gui_board[min(14, y + 1)][min(14, x + 1)] == color):
-        # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and board[y-1][x-1] == color)):
-            xrange = [max(0, x-5), min(15, x+6)]
-            yrange = [max(0, y - 5), min(15, y + 6)]
-
-            y_lower_range = yrange[0] - y    # negative val
-            y_upper_range = yrange[-1] - y   # positive val
-            x_lower_range = xrange[0] - x
-            x_upper_range = xrange[-1] - x
-
-            if y_lower_range < x_lower_range:
-                lower_range = x_lower_range
-            else:
-                lower_range = y_lower_range
-
-            if y_upper_range > x_upper_range:
-                upper_range = x_upper_range
-            else:
-                upper_range = y_upper_range
-
-            for i in range(lower_range , upper_range , 1):
-                # double checks index out of bound error
-                if 0 <= y + i < 15 and 0 <= x + i < 15:
-                    line.append(gui_board[y+i][x+i])
-            # check for 5-win
-            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
+        # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and gui_board[y-1][x-1] == color)):
+        # checking line reset
+        line = []
+        for i in range(-5 , 6 , 1):
+            # double checks index out of bound error
+            if 0 <= y + i < 15 and 0 <= x + i < 15:
+                line.append(gui_board[y+i][x+i])
+        # check for 5-win
+        if check_list(color, line): return True
 
     # 좌측 하단 + 우측 상단
     if (gui_board[min(14, y + 1)][max(0, x - 1)] == color) or (gui_board[max(0, y - 1)][min(14, x + 1)] == color):
-        # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and board[y-1][x+1]) or ((y == 0 or x == 14) and board[y+1][x-1])):
-            xrange = [max(0, x-5), min(15, x+6)]
-            yrange = [max(0, y - 5), min(15, y + 6)]
-
-            y_lower_range = yrange[0] - y    # negative val
-            y_upper_range = yrange[-1] - y   # positive val
-            x_lower_range = xrange[0] - x
-            x_upper_range = xrange[-1] - x
-
-            if y_lower_range < x_lower_range:
-                lower_range = x_lower_range
-            else:
-                lower_range = y_lower_range
-
-            if y_upper_range > x_upper_range:
-                upper_range = x_upper_range
-            else:
-                upper_range = y_upper_range
-
-            for i in range(lower_range , upper_range , 1):
-                # double checks index out of bound error
-                if 0 <= y + i < 15 and 0 <= x - i < 15:
-                    line.append(gui_board[y+i][x-i])
-            # check for 5-win
-            if check_list(color, line): return "win"   # TODO : change return "checked" -> return True
+        # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and gui_board[y-1][x+1]) or ((y == 0 or x == 14) and gui_board[y+1][x-1])):
+        # checking line reset
+        line = []
+        for i in range(-5 , 6 , 1):
+            # double checks index out of bound error
+            if 0 <= y + i < 15 and 0 <= x - i < 15:
+                line.append(gui_board[y+i][x-i])
+        # check for 5-win
+        if check_list(color, line): return True
 
 
     # if not 5 stone
-    return "Not is_five"   # TODO : change to False
+    return False
+
 
 # 흑돌이 둔 후, 금수가 생기는지 확인
 # 금수가 생기면 ban 리스트에 저장

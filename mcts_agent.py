@@ -1,7 +1,7 @@
 import copy
 import math
 import random
-from renju_rule import pre_check  # renju_rule.py의 승리 판별 함수 사용
+from renju_rule import check_if_win  # renju_rule.py의 승리 판별 함수 사용
 from heuristic import heuristic_policy  # 별도 파일에서 휴리스틱 정책 임포트
 
 BOARD_SIZE = 15
@@ -41,7 +41,7 @@ class GomokuState:
         for r in range(BOARD_SIZE):
             for c in range(BOARD_SIZE):
                 if self.board[r][c] != 0:
-                    result = pre_check(self.board, r, c, self.board[r][c])
+                    result = check_if_win(self.board, r, c, self.board[r][c])
                     if result == "win":
                         return True
         return False
@@ -50,7 +50,7 @@ class GomokuState:
         for r in range(BOARD_SIZE):
             for c in range(BOARD_SIZE):
                 if self.board[r][c] != 0:
-                    result = pre_check(self.board, r, c, self.board[r][c])
+                    result = check_if_win(self.board, r, c, self.board[r][c])
                     if result == "win":
                         return self.board[r][c]
         return 0

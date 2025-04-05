@@ -177,14 +177,14 @@ def is_double_four(gui_board, y, x):
                 else:
                     line.insert(0, gui_board[cur_y][cur_x])
                     center += 1
-
-    make_five_check = make_five_row(line)
-    if make_five_check >= 2:
-        return True
-    elif make_five_check == 1:
-        four_cnt += 1
     
-    if four_cnt >= 2: return True
+        make_five_check = make_five_row(line)
+        if make_five_check >= 2:
+            return True
+        elif make_five_check == 1:
+            four_cnt += 1
+        
+        if four_cnt >= 2: return True
 
     return False
 

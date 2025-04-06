@@ -89,19 +89,22 @@ class GomokuBoard(QWidget):
                 self.is_ai_turn = False
                 return
             # else:
-            self.current_player = -self.current_player
-            # self.is_ai_turn = True
+            # self.current_player = -self.current_player
+            self.current_player = -1
+            self.is_ai_turn = True
+
+            QTimer.singleShot(100, self.run_ai_move)
 
         # ai_turn to place stone (currently white only)
-        if self.is_ai_turn:
-            start_time = time.time()
-            self.ai_move()
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"AI move execution time: {execution_time:.6f} seconds")
-
-            self.current_player = 1
-            self.is_ai_turn = False
+        # if self.is_ai_turn:
+        #     start_time = time.time()
+        #     self.ai_move()
+        #     end_time = time.time()
+        #     execution_time = end_time - start_time
+        #     print(f"AI move execution time: {execution_time:.6f} seconds")
+        #
+        #     self.current_player = 1
+        #     self.is_ai_turn = False
 
     # creates new board when a game ends
     def clearBoard(self):
@@ -125,33 +128,35 @@ class GomokuBoard(QWidget):
     def ai_move(self):
         # 현재 보드 상태와 현재 플레이어 정보를 사용하여 AI가 돌 두기
         current_state = GomokuState(copy.deepcopy(self.board), self.current_player)
-        agent = MCTSAgent(iterations=500)
+        agent = MCTSAgent(iterations=5)    #TODO: iteration 수정
         move = agent.select_move(current_state)
         if move is not None:
             r, c = move
             self.board[r][c] = self.current_player
-            self.update()
+
             if check_if_win(self.board, r, c, self.current_player) == True:
                 winner_color = "Black" if self.current_player == 1 else "White"
                 self.game_over(winner_color)
                 return
-            else:
-                self.current_player = -self.current_player
-                self.update()
-                # 만약 AI 턴 후에도 AI가 계속 두어야 한다면 (예: 두 명의 AI 대결), 여기서 다시 호출
-                # if self.current_player == -1:
-                #     QTimer.singleShot(500, self.ai_move)
+
+            self.current_player = -self.current_player
+            self.update()
+            # 만약 AI 턴 후에도 AI가 계속 두어야 한다면 (예: 두 명의 AI 대결), 여기서 다시 호출
+            # if self.current_player == -1:
+            #     QTimer.singleShot(500, self.ai_move)
 
     def run_ai_move(self):
         """Execute AI move separately after UI updates."""
-        if self.is_ai_turn:
-            start_time = time.time()
-            self.ai_move()
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print(f"AI move execution time: {execution_time:.6f} seconds")
+        if not self.is_ai_turn:
+            return
 
-            self.is_ai_turn = False
+        start_time = time.time()
+        self.ai_move()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"AI move execution time: {execution_time:.6f} seconds")
+
+        self.is_ai_turn = False
 
     def is_valid_move(self, row, col):
         """Check if move is valid according to game rules"""

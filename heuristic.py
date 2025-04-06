@@ -1,11 +1,12 @@
 import copy
 import random
-# from renju_rule import pre_check, three, open_three, four, open_four, board, ban, is_invalid
 from renju_rule import board, ban, is_invalid
+from rule import Rule
 
 BOARD_SIZE = 15
 list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
 list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
+r = Rule(board)
 
 def heuristic_evaluation(state, move):
     """
@@ -19,7 +20,7 @@ def heuristic_evaluation(state, move):
     for dy, dx in directions:
         ny, nx = y + dy, x + dx
         if 0 <= ny < BOARD_SIZE and 0 <= nx < BOARD_SIZE:
-            if state.board[ny][nx] == state.current_player:
+            if state.board[ny][nx] == state.current_player or state.board[ny][nx] == -state.current_player:
                 bonus += 1
     return bonus
 
@@ -35,8 +36,8 @@ def threat_blocking_score(state, move):
     # 중요도 순서
     # current_player 가 흑돌에 금수 위치(-100,000)
     # 내가 돌을 놓으면 5 (100,000)
-    # 상대가 4, open4 (49,000)
-    # 내가 돌을 놓으면 open4 (24,000)
+    # 상대가 4, open4 (49,000)   -> X
+    # 내가 돌을 놓으면 open4 (24,000)  -> X
     # 내가 돌을 놓으면 4 (10,000)
     # 상대가 open3 (4,000)
     # 상대가 3 (1,000)
@@ -44,141 +45,36 @@ def threat_blocking_score(state, move):
     # 내가 돌을 놓으면 3 (100)
     # 인접 8방에 돌이 있으면 (1) -> heuristic_evaluation
 
-    copy_board = copy.deepcopy(board)
-    current_player = state.cureent_player
+    r = Rule(copy.deepcopy(state.board))
+    current_player = state.current_player
     opponent = -current_player
-    y, x = move
+    y,x = move
     bonus = 0
 
-    # 금수?
-    if current_player == 1 and (y,x) in ban: return -100000
+    # 금수 검사
+    if current_player == 1 and r.forbidden_point(x, y, 1):
+        return -100000
 
-    # 나한테 유리한지 판단
-    # 좌우, 상하, 양대각선을 받아서 체크
-    copy_board[y][x] = current_player
+    # 나에게 유리한지 판단: 현재 돌을 놓은 후의 상태 검사
+    r.set_stone(x, y, current_player)
+    if r.is_five(x, y, current_player):
+        return 100000
     for direction in range(4):
-        open_pattern_found = False
-        for i in range(2):
-            idx = direction * 2 + i
-            yy, xx = list_dy[idx], list_dx[idx]
-            ny, nx = y, x
+        if r.open_four(x, y, current_player, direction):
+            bonus += 24000
+        if r.four(x, y, current_player, direction):
+            bonus += 10000
+        if r.open_three(x, y, current_player, direction):
+            bonus += 400
+    # 원래 상태로 복원
+    r.set_stone(x, y, 0)
 
-            # 한쪽 방향 탐색
-            line = [1]  # 시작점 돌(이미 놓은 돌)
-            empty_cnt = 0
-            stone_cnt = 0
-
-            while True:
-                ny += yy
-                nx += xx
-
-                if is_invalid(ny, nx):
-                    break
-
-                if copy_board[ny][nx] == 0:
-                    line.append(0)
-                    empty_cnt += 1
-                elif copy_board[ny][nx] == 1:
-                    line.append(1)
-                    stone_cnt += 1
-                else:  # 백돌이면 중단
-                    break
-
-                if empty_cnt >= 2 or stone_cnt > 2:
-                    break
-
-            # 반대 방향 탐색
-            ny, nx = y, x
-            empty_cnt = 0
-            stone_cnt = 0
-
-            while True:
-                ny -= yy
-                nx -= xx
-
-                if is_invalid(ny, nx):
-                    break
-
-                if copy_board[ny][nx] == 0:
-                    line.insert(0, 0)
-                    empty_cnt += 1
-                elif copy_board[ny][nx] == 1:
-                    line.insert(0, 1)
-                    stone_cnt += 1
-                else:
-                    break
-
-                if empty_cnt >= 2 or stone_cnt > 2:
-                    break
-        # 내가 5, open4, 4, open3, 3 인지 판단
-        # if pre_check(copy_board, y, x, current_player) == "win" : return 100000
-        # if open_four(y, x, current_player): bonus += 24000
-        # if four(y, x, current_player): bonus += 10000
-        # if open_three(y, x, current_player): bonus += 400
-        # if three(y, x, current_player): bonus += 100
-    copy_board[y][x] = 0
-
-    # 위험도 판단
-    # 좌우, 상하, 양대각선을 받아서 체크
+    # 위험도 판단: 상대 돌에 대한 체크
     for direction in range(4):
-        open_pattern_found = False
-        for i in range(2):
-            idx = direction * 2 + i
-            yy, xx = list_dy[idx], list_dx[idx]
-            ny, nx = y, x
-
-            # 한쪽 방향 탐색
-            line = [1]  # 시작점 돌(이미 놓은 돌)
-            empty_cnt = 0
-            stone_cnt = 0
-
-            while True:
-                ny += yy
-                nx += xx
-
-                if is_invalid(ny, nx):
-                    break
-
-                if copy_board[ny][nx] == 0:
-                    line.append(0)
-                    empty_cnt += 1
-                elif copy_board[ny][nx] == 1:
-                    line.append(1)
-                    stone_cnt += 1
-                else:  # 백돌이면 중단
-                    break
-
-                if empty_cnt >= 2 or stone_cnt > 2:
-                    break
-
-            # 반대 방향 탐색
-            ny, nx = y, x
-            empty_cnt = 0
-            stone_cnt = 0
-
-            while True:
-                ny -= yy
-                nx -= xx
-
-                if is_invalid(ny, nx):
-                    break
-
-                if copy_board[ny][nx] == 0:
-                    line.insert(0, 0)
-                    empty_cnt += 1
-                elif copy_board[ny][nx] == 1:
-                    line.insert(0, 1)
-                    stone_cnt += 1
-                else:
-                    break
-
-                if empty_cnt >= 2 or stone_cnt > 2:
-                    break
-        # 상대가 4, open4, 3, open3 면 가중치 업데이트
-        # if four(y,x, opponent) or open_four(y,x, opponent): bonus += 49000
-        # if open_three(y, x, opponent): bonus += 4000
-        # if three(y, x, opponent): bonus += 1000
-
+        if r.get_stone_count(x, y, opponent, direction) >= 4:
+            bonus += 49000
+        if r.open_three(x, y, opponent, direction):
+            bonus += 1000
     return bonus
 
 
@@ -192,6 +88,7 @@ def heuristic_policy(state):
     - 모든 후보의 점수가 0이면 단순 랜덤 선택합니다.
     """
     moves = state.get_valid_moves()
+    list.sort(moves)
     if not moves:
         return None
     scores = []

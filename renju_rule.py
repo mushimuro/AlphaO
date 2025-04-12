@@ -328,7 +328,7 @@ def is_double_three(board, y, x, color):
         if open_three:
             cnt += 1
             if cnt >= 2:
-                print("is SAMSAM")
+                # print("is SAMSAM")
                 return True
             
 

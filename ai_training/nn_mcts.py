@@ -2,8 +2,8 @@ import math
 import copy
 import torch
 import numpy as np
-from deeplearning import GomokuNet
-from rule import check_winner, is_allowed_move  # Import terminal-state functions from rule.py
+from nn_deeplearning import GomokuNet
+from nn_renju_rule import check_winner, is_allowed_move  # Import terminal-state functions from rule.py
 
 ##############################################
 # Helper functions for board encoding and moves
@@ -28,7 +28,7 @@ def board_to_tensor(board, current_player):
     tensor = np.stack([current_board, opponent_board, turn_board])
     return torch.tensor(tensor)
 
-def get_allowed_moves(board):
+def get_allowed_moves(board, stone):
     """
     Returns a list of allowed moves (as (row, col) tuples) based on the rules.
     A move is allowed if the cell is empty and passes the rules defined in rule.py.
@@ -37,7 +37,7 @@ def get_allowed_moves(board):
     board_size = len(board)
     for y in range(board_size):
         for x in range(board_size):
-            if board[y][x] == 0 and is_allowed_move(board, (y, x)):
+            if board[y][x] == 0 and is_allowed_move(board, (y, x), stone):
                 allowed.append((y, x))
     return allowed
 
@@ -134,7 +134,7 @@ def evaluate_state(board, model, current_player):
     with torch.no_grad():
         log_policy, value = model(board_tensor.unsqueeze(0))
     raw_policy = torch.exp(log_policy).squeeze(0).cpu().numpy()
-    allowed_moves = get_allowed_moves(board)
+    allowed_moves = get_allowed_moves(board, current_player)
     mask = create_move_mask(board, allowed_moves)
     policy = raw_policy * mask
     if policy.sum() > 0:
@@ -152,7 +152,7 @@ def mcts_simulation(node, model, current_player):
         # Return simulation result from the perspective of the original current player.
         return 1 if winner == current_player else -1
 
-    allowed_moves = get_allowed_moves(node.board)
+    allowed_moves = get_allowed_moves(node.board, current_player)
     if not allowed_moves:
         return 0  # Consider it a draw if no moves remain.
 

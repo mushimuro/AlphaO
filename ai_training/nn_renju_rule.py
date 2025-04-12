@@ -1,3 +1,10 @@
+import sys
+import os
+# Compute the parent directory relative to this file
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
 import numpy as np
 from renju_rule import is_double_four, is_double_three, is_invalid, check_if_win, check_list
 
@@ -37,7 +44,7 @@ def is_allowed_move(board, move, stone):
 
     # Only check for forbidden moves if the stone is black.
     if stone == 1:
-        if is_invalid(y, x) or is_double_four(board, y, x) or is_double_three(board, y, x, stone):
+        if is_invalid(y, x) or is_double_four(board, y, x, stone) or is_double_three(board, y, x, stone):
             return False
 
     return True

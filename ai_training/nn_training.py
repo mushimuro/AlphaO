@@ -37,7 +37,11 @@ def select_move_from_root(root, temperature=1.0):
     else:
         # Apply temperature to the counts to get probabilities.
         counts = counts ** (1.0 / temperature)
-        probs = counts / np.sum(counts)
+        total = np.sum(counts)
+        if total == 0:
+            probs = np.ones(num_moves, dtype=np.float32) / num_moves
+        else:
+            probs = counts / total
         move_index = np.random.choice(np.arange(num_moves), p=probs)
     # Convert flat index back to (row, col) tuple:
     board_size = len(root.board)
@@ -79,7 +83,7 @@ def self_play_game(model, num_simulations=100):
             mcts_policy = move_counts / np.sum(move_counts)
         else:
             # Fallback: uniform probabilities over allowed moves.
-            allowed_moves = get_allowed_moves(board)
+            allowed_moves = get_allowed_moves(board, current_player)
             mask = np.zeros(board_moves, dtype=np.float32)
             for move in allowed_moves:
                 mask[move_to_index(move, board)] = 1.0

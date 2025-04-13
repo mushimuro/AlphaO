@@ -3,7 +3,7 @@ import copy
 import torch
 import numpy as np
 from nn_deeplearning import GomokuNet
-from nn_renju_rule import check_winner, is_allowed_move  # Import terminal-state functions from rule.py
+from nn_renju_rule import check_winner, is_allowed_move  # Import terminal-state functions
 
 ##############################################
 # Helper functions for board encoding and moves
@@ -19,7 +19,7 @@ def board_to_tensor(board, current_player):
     Uses a 3-channel encoding:
       1. Current player's stones.
       2. Opponent's stones.
-      3. A constant channel (e.g. all ones).
+      3. A constant channel (e.g., all ones).
     """
     board_size = len(board)
     current_board = np.array([[1 if cell == current_player else 0 for cell in row] for row in board], dtype=np.float32)
@@ -31,7 +31,7 @@ def board_to_tensor(board, current_player):
 def get_allowed_moves(board, stone):
     """
     Returns a list of allowed moves (as (row, col) tuples) based on the rules.
-    A move is allowed if the cell is empty and passes the rules defined in rule.py.
+    A move is allowed if the cell is empty and passes the rules defined in nn_renju_rule.
     """
     allowed = []
     board_size = len(board)
@@ -63,7 +63,7 @@ def is_terminal(board):
     """
     Check for terminal state using the rules.
     Returns (True, winner) if terminal:
-      - winner: 1, -1 for a win; 0 for draw.
+      - winner: 1 or -1 for a win; 0 for a draw.
     Returns (False, None) if the game is still in progress.
     """
     winner = check_winner(board)
@@ -130,8 +130,11 @@ def evaluate_state(board, model, current_player):
       - A value estimate for the state.
     """
     board_tensor = board_to_tensor(board, current_player)
+    # Move the tensor to the same device as the model.
+    board_tensor = board_tensor.to(next(model.parameters()).device)
     model.eval()
     with torch.no_grad():
+        # Add a batch dimension.
         log_policy, value = model(board_tensor.unsqueeze(0))
     raw_policy = torch.exp(log_policy).squeeze(0).cpu().numpy()
     allowed_moves = get_allowed_moves(board, current_player)
@@ -184,6 +187,9 @@ if __name__ == '__main__':
     model = GomokuNet(board_size=board_size, input_channels=3, num_res_blocks=5, num_filters=64)
     # Optionally load a pretrained model checkpoint:
     # model.load_state_dict(torch.load('model.pth'))
+    
+    # (Assuming the model has already been moved to the proper device by your training script,
+    #  or you could call model.to(device) here if needed.)
 
     # Create the MCTS root node.
     root = MCTSNode(board, current_player)

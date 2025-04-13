@@ -13,12 +13,13 @@ from nn_mcts import (
     make_move,
     is_terminal,
 )
-# Import any Renju rules needed via the module "rule" in mcts_agent.py
-# Set device
+
+# Set device: use "cuda" if GPU is available, else CPU.
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 if torch.cuda.is_available():
     print("GPU Name:", torch.cuda.get_device_name(0))
+
 ##############################################
 # Self-Play and Training Functions
 ##############################################
@@ -36,10 +37,9 @@ def select_move_from_root(root, temperature=1.0):
         counts[move_to_index(move, root.board)] = child.visits
 
     if temperature == 0:
-        # Deterministic: choose the move with the highest visits.
         move_index = np.argmax(counts)
     else:
-        # Apply temperature to the counts to get probabilities.
+        # Apply temperature to the counts.
         counts = counts ** (1.0 / temperature)
         total = np.sum(counts)
         if total == 0:
@@ -47,8 +47,7 @@ def select_move_from_root(root, temperature=1.0):
         else:
             probs = counts / total
         move_index = np.random.choice(np.arange(num_moves), p=probs)
-    # Convert flat index back to (row, col) tuple:
-    board_size = len(root.board)
+
     row = move_index // board_size
     col = move_index % board_size
     return (row, col), counts / np.sum(counts)
@@ -60,23 +59,24 @@ def self_play_game(model, num_simulations=100):
     
     Each example is a tuple (board_state, mcts_policy, outcome)
     where:
-      - board_state is the board encoding (e.g., as a NumPy array or similar)
-      - mcts_policy is the improved move probabilities from MCTS (flattened to [num_moves])
-      - outcome is the game result from the player's perspective (+1 win, -1 loss, 0 draw)
+      - board_state is the board configuration (a 2D list),
+      - mcts_policy is the improved move probabilities from MCTS (flattened to [num_moves]),
+      - outcome is the game result from the perspective of the player (+1 win, -1 loss, 0 draw).
     """
-    game_data = []   # to store (board, mcts_policy, player) for each move
+    game_data = []   # Stores tuples: (board, mcts_policy, player)
     board_size = 15
-    # Create an empty board: 0 for empty, 1 for player 1, -1 for player 2.
+    # Initialize an empty board: 0 for empty, 1 for player 1, -1 for player -1.
     board = [[0 for _ in range(board_size)] for _ in range(board_size)]
-    current_player = 1  # let player 1 start
+    current_player = 1  # Let player 1 start (e.g., black).
 
     while True:
-        # Create the MCTS root node for the current board.
+        # Create the MCTS root node for the current board state.
         root = MCTSNode(board, current_player)
-        # Run a number of MCTS simulations from this state.
+        # Run a series of MCTS simulations.
         for _ in range(num_simulations):
             mcts_simulation(root, model, current_player)
-        # Derive the improved move distribution from visit counts.
+        
+        # Derive the improved move distribution (policy) from visit counts.
         board_moves = board_size * board_size
         move_counts = np.zeros(board_moves, dtype=np.float32)
         for move, child in root.children.items():
@@ -86,18 +86,17 @@ def self_play_game(model, num_simulations=100):
         if np.sum(move_counts) > 0:
             mcts_policy = move_counts / np.sum(move_counts)
         else:
-            # Fallback: uniform probabilities over allowed moves.
+            # Fallback: if no moves were visited, use a uniform distribution over allowed moves.
             allowed_moves = get_allowed_moves(board, current_player)
             mask = np.zeros(board_moves, dtype=np.float32)
             for move in allowed_moves:
                 mask[move_to_index(move, board)] = 1.0
             mcts_policy = mask / mask.sum()
 
-        # Record current state.
-        # You can store the board as a copy (or the tensor encoding) along with the current player.
+        # Record the current board state, policy, and current player.
         game_data.append((board, mcts_policy, current_player))
         
-        # Select the next move.
+        # Select the next move from the root using the improved probabilities.
         move, _ = select_move_from_root(root, temperature=1.0)
         board = make_move(board, move, current_player)
         
@@ -105,13 +104,14 @@ def self_play_game(model, num_simulations=100):
         terminal, winner = is_terminal(board)
         if terminal:
             break
-        # Switch player.
+
+        # Switch the player for the next turn.
         current_player = -current_player
 
-    # Assign outcomes for each move from the perspective of the player who made the move.
+    # Convert the collected game data to training examples.
     training_examples = []
     for state, policy, player in game_data:
-        # Outcome from the perspective of the player who made the move.
+        # Outcome is assigned from the perspective of the player who made the move.
         if winner is None:
             outcome = 0
         else:
@@ -121,7 +121,7 @@ def self_play_game(model, num_simulations=100):
 
 def play_self_games(model, num_games=10, num_simulations=100):
     """
-    Run multiple self-play games and collect training examples.
+    Run multiple self-play games to collect training examples.
     """
     all_examples = []
     for game in range(num_games):
@@ -137,11 +137,11 @@ def play_self_games(model, num_games=10, num_simulations=100):
 def loss_func(pred_policy, pred_value, target_policy, target_value, model, l2_reg=1e-4):
     """
     Combined loss function:
-      - Policy loss: negative log likelihood (cross-entropy) using target probabilities.
-      - Value loss: mean squared error between predicted value and target outcome.
+      - Policy loss: Negative log-likelihood (cross-entropy) using target probabilities.
+      - Value loss: Mean squared error between predicted value and the actual outcome.
       - Regularization: L2 penalty on the network parameters.
     """
-    # Note: pred_policy is in log probabilities.
+    # pred_policy is in log probabilities.
     policy_loss = -torch.mean(torch.sum(target_policy * pred_policy, dim=1))
     value_loss = torch.mean((pred_value.view(-1) - target_value)**2)
     l2_loss = sum(torch.sum(param ** 2) for param in model.parameters())
@@ -164,18 +164,16 @@ def train_model(model, training_data, epochs=10, batch_size=32, learning_rate=1e
             policy_targets = []
             value_targets = []
             for board, mcts_policy, outcome in batch:
-                # Convert board state to tensor encoding.
-                # We assume the board tensor is generated with board_to_tensor().
-                # For training, you might choose a canonical view (e.g., always from the perspective of player 1).
-                # Here, we use the stored board and the current player from the example.
-                state_tensor = board_to_tensor(board, current_player=1)  # adjust if needed
+                # Convert board state to a tensor.
+                # Here we use a canonical view (from player 1's perspective).
+                state_tensor = board_to_tensor(board, current_player=1)
                 state_batch.append(state_tensor)
                 policy_targets.append(torch.tensor(mcts_policy, dtype=torch.float32))
                 value_targets.append(torch.tensor(outcome, dtype=torch.float32))
-            # Stack tensors into batch.
-            state_batch = torch.stack(state_batch)
-            policy_targets = torch.stack(policy_targets)
-            value_targets = torch.stack(value_targets)
+            # Stack into batches and move to GPU.
+            state_batch = torch.stack(state_batch).to(device)
+            policy_targets = torch.stack(policy_targets).to(device)
+            value_targets = torch.stack(value_targets).to(device)
 
             pred_policy, pred_value = model(state_batch)
             loss = loss_func(pred_policy, pred_value, policy_targets, value_targets, model)
@@ -193,9 +191,10 @@ def train_model(model, training_data, epochs=10, batch_size=32, learning_rate=1e
 
 if __name__ == '__main__':
     board_size = 15
+    # Instantiate the model.
     model = GomokuNet(board_size=board_size, input_channels=3, num_res_blocks=5, num_filters=64)
-    # Optionally load a pretrained model:
-    # model.load_state_dict(torch.load('model.pth'))
+    # Move the model to the GPU (if available).
+    model.to(device)
     
     total_iterations = 20
     for iteration in range(total_iterations):
@@ -205,5 +204,5 @@ if __name__ == '__main__':
         print("Training phase")
         train_model(model, training_examples, epochs=10, batch_size=32, learning_rate=1e-3)
         
-        # Save model checkpoint every iteration.
+        # Save a checkpoint for each iteration.
         torch.save(model.state_dict(), f"model_checkpoint_iter_{iteration+1}.pth")

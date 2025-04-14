@@ -22,11 +22,11 @@ class GomokuBoard(QWidget):
         self.parent_widget = parent
 
         # self.ai_model = "minimax_model"
-        self.ai = Minimax(depth=2)
+        self.ai = Minimax(depth=3)
         self.is_ai_turn = False
         
         # AI related attributes
-        self.ai = Minimax(depth=2)
+        self.ai = Minimax(depth=3)
         self.is_ai_enabled = False
         self.is_ai_turn = False
         self.player_color = 1  # 1 for black, -1 for white
@@ -89,11 +89,7 @@ class GomokuBoard(QWidget):
         x, y = event.position().x(), event.position().y()
         col = int(x // CELL_SIZE)   # x-value
         row = int(y // CELL_SIZE)   # y-value
-        
-        if self.is_valid_move(row, col):
-            self.board[row][col] = self.current_player
-            self.update()
-
+       
         if self.is_valid_move(row, col):
             self.board[row][col] = self.current_player
             self.update()
@@ -107,6 +103,8 @@ class GomokuBoard(QWidget):
             # else:
             self.current_player = -1
             self.is_ai_turn = True
+            # self.current_player = -self.current_player
+
 
         # ai_turn to place stone (currently white only)
         if self.is_ai_turn:

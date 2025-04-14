@@ -10,23 +10,10 @@ list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
 list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
 
 
-
 # TODO: function to check - tie if no space left, white win if black cannot place
 def is_board_full(self, y, x):
     return False
 
-# check if the spot is placeable(empty stone)
-def is_placeable(self, y, x):
-    if self.board[y][x] == 0:
-        return True
-    return False
-
-
-# TODO: is_valid 랑 is_placeable 이랑 뭐가 다름? - 웅기
-# board is (y,x)
-# color : black : 1 & white : -1 & default : 0
-def is_valid(y, x):
-    return board[y][x] == 0
 
 # y,x 를 좌표를 받았을 때 이게 out of bound 인지 확인하는 함수
 # is_valid 하는게 딱히 없으면 is_valid 로 바꿀 예정
@@ -62,13 +49,13 @@ def check_if_win(gui_board, y, x, color):
     checks for winning state
     returns True if win, if not False
     '''
-    line = []
 
     # 가로줄 ; This removes edge cases
-    if (gui_board[y][max(0,x-1)] == color) or (gui_board[y][min(14,x+1)] == color):
+    if (gui_board[y][max(0,x-1)] == color) or (gui_board[y][min(14,x+1)] == color):  # TODO: is this needed??
         # normal case or edge cases
         if ((x != 14 and x != 0) or (x == 14 and gui_board[y][x-1] == color) or (x == 0 and gui_board[y][x+1] == color)):
-            line = []  # reset line list
+            # checking line reset
+            line = []
             for i in range(max(0, x-5), min(15, x+6), 1):
                 # double checks index out of bound error
                 if 0 <= y < 15 and 0 <= i < 15:
@@ -79,7 +66,8 @@ def check_if_win(gui_board, y, x, color):
     # 세로줄 (14,12)
     if (gui_board[max(0, y - 1)][x] == color) or (gui_board[min(14, y + 1)][x] == color):
         if ((y != 14 and y != 0) or (y == 14 and gui_board[y-1][x] == color) or (y == 0 and gui_board[y+1][x] == color)):
-            line = []  # reset line list
+            # checking line reset
+            line = []
             for i in range(max(0, y - 5), min(15, y + 6), 1):
                 if 0 <= i < 15 and 0 <= x < 15:
                     line.append(gui_board[i][x])
@@ -91,7 +79,8 @@ def check_if_win(gui_board, y, x, color):
     # 좌측 상단 + 우측 하단 대각선
     if (gui_board[max(0, y - 1)][max(0, x - 1)] == color) or (gui_board[min(14, y + 1)][min(14, x + 1)] == color):
         # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 0 or x == 0) and gui_board[y+1][x+1] == color) or ((y == 14 or x == 14) and gui_board[y-1][x-1] == color)):
-        line = []  # reset line list
+        # checking line reset
+        line = []
         for i in range(-5 , 6 , 1):
             # double checks index out of bound error
             if 0 <= y + i < 15 and 0 <= x + i < 15:
@@ -102,7 +91,8 @@ def check_if_win(gui_board, y, x, color):
     # 좌측 하단 + 우측 상단
     if (gui_board[min(14, y + 1)][max(0, x - 1)] == color) or (gui_board[max(0, y - 1)][min(14, x + 1)] == color):
         # if ((y != 14 and y != 0 and x != 14 and x != 0) or ((y == 14 or x == 0) and gui_board[y-1][x+1]) or ((y == 0 or x == 14) and gui_board[y+1][x-1])):
-        line = []  # reset line list
+        # checking line reset
+        line = []
         for i in range(-5 , 6 , 1):
             # double checks index out of bound error
             if 0 <= y + i < 15 and 0 <= x - i < 15:
@@ -188,6 +178,14 @@ def is_double_four(gui_board, y, x):
                     line.insert(0, gui_board[cur_y][cur_x])
                     center += 1
 
+    make_five_check = make_five_row(line)
+    if make_five_check >= 2:
+        return True
+    elif make_five_check == 1:
+        four_cnt += 1
+    
+    if four_cnt >= 2: return True
+
     return False
 
 # 받은 리스트에서 오목을 만들 수 있는지 확인
@@ -245,114 +243,120 @@ def is_overline(gui_board, y,x):
             return True
 
     return False
-    # list_dx = [-1, 1, -1, 1, 0, 0, 1, -1]
-    # list_dy = [0, 0, -1, 1, -1, 1, -1, 1]
-def open_three(line: list) -> bool:
-    """
-    주어진 line 리스트가 열린 삼 패턴(33 패턴)에 해당하는지 판단합니다.
-    조건:
-      1. line 길이가 최소 4 이상이어야 함.
-      2. 양쪽 끝이 0이어야 함.
-      3. 전체 돌의 개수가 정확히 3개여야 함.
-      4. 연속된 돌의 최대 길이가 2 이상이거나, 
-         문자열 '0110' 또는 '1010' 패턴이 존재하면 열린 삼으로 판단.
-    """
-    if len(line) < 4:
-        return False
-    if line[0] != 0 or line[-1] != 0:
-        return False
-    if sum(1 for s in line if s == 1) != 3:
-        return False
-
-    consecutive = 0
-    max_consecutive = 0
-    for stone in line:
-        if stone == 1:
-            consecutive += 1
-            max_consecutive = max(max_consecutive, consecutive)
-        else:
-            consecutive = 0
-    if max_consecutive >= 2:
-        return True
-
-    line_str = ''.join(map(str, line))
-    if '0110' in line_str or '1010' in line_str:
-        return True
-
-    return False
 
 def is_double_three(board, y, x, color):
     if color != 1:
         return False
-
+    
     cnt = 0
     gui_board = copy.deepcopy(board)
     gui_board[y][x] = 1
 
     for direction in range(4):
         open_three = False
-        for i in range(2):
-            idx = direction * 2 + i
-            yy, xx = list_dy[idx], list_dx[idx]
-            ny, nx = y, x
+        # for i in range(2):
+        idx = direction * 2  # + i
+        yy, xx = list_dy[idx], list_dx[idx]
+        ny, nx = y, x
+            
+        # 한쪽 방향 탐색
+        line = [1]  # 현재 위치의 돌
+        empty_cnt = 0
+        black_stone_cnt = 0
+        white_stone_cnt = 0
+        
+        while True:
+            ny += yy
+            nx += xx
+            
+            if is_invalid(ny, nx):
+                break
+                
+            if gui_board[ny][nx] == 0:
+                line.append(0)
+                empty_cnt += 1
+            elif gui_board[ny][nx] == 1:
+                line.append(1)
+                black_stone_cnt += 1
+            elif gui_board[ny][nx] == -1:
+                line.append(-1)
+                white_stone_cnt += 1
+            else:  # 백돌이면 중단
+                break
+                
+            if empty_cnt >= 2 or black_stone_cnt > 2 or white_stone_cnt >= 1:  # 빈칸이나 돌이 너무 많으면 중단
+                break
+            
+        # 반대 방향 탐색
+        ny, nx = y, x
+        empty_cnt = 0
+        black_stone_cnt = 0
+        white_stone_cnt = 0
 
-            line = [1]  # 현재 위치의 돌
-            empty_cnt = 0
-            stone_cnt = 0
-
-            # 한쪽 방향 탐색
-            while True:
-                ny += yy
-                nx += xx
-
-                if is_invalid(ny, nx):  # 기존의 is_invalid 함수 사용
-                    break
-
-                if gui_board[ny][nx] == 0:
-                    line.append(0)
-                    empty_cnt += 1
-                elif gui_board[ny][nx] == 1:
-                    line.append(1)
-                    stone_cnt += 1
-                else:
-                    break
-
-                if empty_cnt >= 2 or stone_cnt > 2:
-                    break
-
-            # 반대 방향 탐색
-            ny, nx = y, x
-            empty_cnt = 0
-            stone_cnt = 0
-
-            while True:
-                ny -= yy
-                nx -= xx
-
-                if is_invalid(ny, nx):  # 기존의 is_invalid 함수 사용
-                    break
-
-                if gui_board[ny][nx] == 0:
-                    line.insert(0, 0)
-                    empty_cnt += 1
-                elif gui_board[ny][nx] == 1:
-                    line.insert(0, 1)
-                    stone_cnt += 1
-                else:
-                    break
-
-                if empty_cnt >= 2 or stone_cnt > 2:
-                    break
-
-            if open_three(line):
-                open_three = True
+            
+        while True:
+            ny -= yy
+            nx -= xx
+            
+            if is_invalid(ny, nx):
                 break
 
+            if white_stone_cnt > 2:
+                break
+                
+            if gui_board[ny][nx] == 0:
+                line.insert(0, 0)
+                empty_cnt += 1
+            elif gui_board[ny][nx] == 1:
+                line.insert(0, 1)
+                black_stone_cnt += 1
+            elif empty_cnt <= 3 and gui_board[ny][nx] == -1:
+                line.insert(0,-1)
+                white_stone_cnt += 1
+            else:
+                break
+                
+            if empty_cnt >= 2 or black_stone_cnt > 2 or white_stone_cnt >= 1:
+                break
+            
+        # check if open-3
+        if is_open_three(line):
+            open_three = True
+        
+        
         if open_three:
             cnt += 1
             if cnt >= 2:
                 print("is SAMSAM")
                 return True
+            
 
     gui_board[y][x] = 0
     return False
+
+# returns True if open 3, else False
+def is_open_three(line):
+    # return False if closed 3
+    if '-101110-1' in ''.join(map(str,line)):
+        return False
+    if len(line) >= 4:  # 최소 4칸 이상
+        # 33 패턴들
+        if (line[0] == 0 and line[-1] == 0):  # 양쪽이 열려있어야 함
+            stone_count = sum(1 for s in line if s == 1)
+            if stone_count == 3:  # 돌이 정확히 3개
+                # 연속 패턴: ○●●●○
+                consecutive = 0
+                max_consecutive = 0
+                for stone in line:
+                    if stone == 1:
+                        consecutive += 1
+                        max_consecutive = max(max_consecutive, consecutive)
+                    else:
+                        consecutive = 0
+                        
+                # 불연속 패턴: ○●●○●○, ○●○●●○
+                if max_consecutive >= 2 or '0110' in ''.join(map(str, line)) or '1010' in ''.join(map(str, line)):
+                    return True
+    
+    return False
+                        

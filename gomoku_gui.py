@@ -1,42 +1,25 @@
+# gomoku_gui.py
 import sys
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
-from PyQt6.QtCore import *
-import gomoku_board
-
-# TODO
-# 1. PvC, PvP 정하는 최상단 페이지 만들기 -> then create function for choosing player_color
-# 2. placing button function 만들기 : 보드판 누르면 shading effect -> if "place" button clicked, then stone is placed
-# 3. 흑 입장에서 금수 자리 보이도록 추가
+from PyQt6.QtWidgets import QApplication, QDialog, QStackedWidget, QVBoxLayout, QFormLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QRadioButton, QMessageBox, QWidget
+from PyQt6.QtCore import Qt
+from gomoku_board import GomokuBoard
 
 class Main(QDialog):
     def __init__(self):
         super().__init__()
-
         self.stacked_widget = QStackedWidget(self)
-
-        self.main_page = QWidget()
-        self.game_page = QWidget()
-
-        self.init_main_page()
-        self.init_game_page()
-
+        self.main_page = self.init_main_page()
+        self.game_page = self.init_game_page()
         self.stacked_widget.addWidget(self.main_page)
         self.stacked_widget.addWidget(self.game_page)
-
-        # main_layout = QVBoxLayout(QFormLayout)
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.stacked_widget)
         self.setLayout(main_layout)
-
         self.setWindowTitle("AlphaO")
-
-        # window size
         self.resize(800, 600)
 
-
-    # main page setup
     def init_main_page(self):
+        main_page_widget = QWidget()
         main_layout = QFormLayout()
         
         # page layouts
@@ -71,11 +54,13 @@ class Main(QDialog):
         main_layout.addRow(start_button_layout)
 
         # default settings
-        self.main_page.setLayout(main_layout)
+        # self.main_page.setLayout(main_layout)
+        main_page_widget.setLayout(main_layout)
+        return main_page_widget
 
 
-    # game page setup
     def init_game_page(self):
+        game_page_widget = QWidget()
         main_layout = QFormLayout()
         
         # page layouts
@@ -88,7 +73,7 @@ class Main(QDialog):
         label_widget = QLabel("ALPHAO!")
         surrender_button_widget = QPushButton("surrender")
         place_button_widget = QPushButton("place")
-        self.gomoku_board = gomoku_board.GomokuBoard(parent=self)
+        self.gomoku_board = GomokuBoard(parent=self)
         
         # widget customize & functions
         label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -109,25 +94,22 @@ class Main(QDialog):
         main_layout.addRow(buttons_layout)
 
         # default settings
-        self.game_page.setLayout(main_layout)
+        # self.game_page.setLayout(main_layout)
+        game_page_widget.setLayout(main_layout)
+        return game_page_widget
 
 
     # function for handling game-over
     # create pop-up screen showing who won, then redirects to main page
     def handle_game_over(self, winner_color):
-        print(winner_color)
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle("Game Over")
-        msg_box.setText(f"{winner_color} color wins!")
+        msg_box.setText(f"{winner_color} wins!")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-        button = msg_box.exec()
+        msg_box.exec()
+        self.stacked_widget.setCurrentWidget(self.main_page)
+        self.gomoku_board.clearBoard()
 
-        if button == QMessageBox.StandardButton.Ok:
-            self.stacked_widget.setCurrentWidget(self.main_page)
-            self.gomoku_board.clearBoard()
-
-
-# run application
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = Main()

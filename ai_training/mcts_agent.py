@@ -2,9 +2,9 @@ import copy
 import math
 import random
 
-from AlphaO.heuristic import heuristic_evaluation, threat_blocking_score
+from ai_training.heuristic import heuristic_evaluation, threat_blocking_score
 from renju_rule import check_if_win  # renju_rule.py의 승리 판별 함수 사용
-from heuristic import heuristic_policy  # 별도 파일에서 휴리스틱 정책 임포트
+from ai_training.heuristic import heuristic_policy  # 별도 파일에서 휴리스틱 정책 임포트
 
 BOARD_SIZE = 15
 

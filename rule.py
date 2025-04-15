@@ -95,6 +95,18 @@ class Rule(object):
         else: cnt = 0
         return cnt
 
+    def three(self, x, y, stone, direction):
+        for i in range(2):
+            coord = self.find_empty_point(x, y, stone, direction * 2 + i)
+            if coord:
+                dx, dy = coord
+                self.set_stone(dx, dy, stone)
+                if self.four(dx, dy, stone, direction):
+                    self.set_stone(dx, dy, empty)
+                    return True
+                self.set_stone(dx, dy, empty)
+        return False
+
     def four(self, x, y, stone, direction):
         for i in range(2):
             coord = self.find_empty_point(x, y, stone, direction * 2 + i)

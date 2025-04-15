@@ -2,6 +2,8 @@ import sys, os
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
+
+from ai_training.mcts_agent import GomokuState, MCTSAgent
 from renju_rule import *
 import time
 from ai_training.minimax import Minimax
@@ -12,6 +14,7 @@ BOARD_SIZE = 15
 CELL_SIZE = 40
 STONE_SIZE = 15
 
+
 class GomokuBoard(QWidget):
     game_over_signal = pyqtSignal(str)
 
@@ -21,12 +24,15 @@ class GomokuBoard(QWidget):
         self.current_player = 1
         self.parent_widget = parent
 
-        # self.ai_model = "minimax_model"
-        self.ai = Minimax(depth=3)
-        self.is_ai_turn = False
-        
-        # AI related attributes
-        self.ai = Minimax(depth=3)
+############  MINIMAX ##########################################################################################
+        # self.ai_model = "minimax_model"                                                                      #
+        self.ai = Minimax(depth=3)                                                                             #
+        self.is_ai_turn = False                                                                                #
+                                                                                                               #
+        # AI related attributes                                                                                #
+        self.ai = Minimax(depth=3)                                                                             #
+############  MINIMAX ##########################################################################################
+
         self.is_ai_enabled = False
         self.is_ai_turn = False
         self.player_color = 1  # 1 for black, -1 for white
@@ -71,11 +77,11 @@ class GomokuBoard(QWidget):
         # draw stones
         for row in range(BOARD_SIZE):
             for col in range(BOARD_SIZE):
-                if self.board[row][col] != 0:   # ensures blank space
-                    if self.board[row][col] == 1:  
-                        painter.setBrush(QBrush(Qt.GlobalColor.black))  
-                    else:  
-                        painter.setBrush(QBrush(Qt.GlobalColor.white)) 
+                if self.board[row][col] != 0:  # ensures blank space
+                    if self.board[row][col] == 1:
+                        painter.setBrush(QBrush(Qt.GlobalColor.black))
+                    else:
+                        painter.setBrush(QBrush(Qt.GlobalColor.white))
                     x = col * CELL_SIZE + CELL_SIZE // 2
                     y = row * CELL_SIZE + CELL_SIZE // 2
                     painter.drawEllipse(QPoint(x, y), STONE_SIZE, STONE_SIZE)
@@ -109,6 +115,18 @@ class GomokuBoard(QWidget):
 
             QTimer.singleShot(100, self.run_ai_move)
 
+            QTimer.singleShot(100, self.run_ai_move)
+
+        # ai_turn to place stone (currently white only)
+        # if self.is_ai_turn:
+        #     start_time = time.time()
+        #     self.ai_move()
+        #     end_time = time.time()
+        #     execution_time = end_time - start_time
+        #     print(f"AI move execution time: {execution_time:.6f} seconds")
+        #
+        #     self.current_player = 1
+        #     self.is_ai_turn = False
 
     # creates new board when a game ends
     def clearBoard(self):
@@ -116,7 +134,6 @@ class GomokuBoard(QWidget):
         self.current_player = 1  
         self.is_ai_turn = False
         self.update()
-
 
     # pop up screen when someone wins / redirects to main page when clicking "ok"
     def show_win_popup(self, winner_color):
@@ -130,6 +147,54 @@ class GomokuBoard(QWidget):
             if self.parent_widget:
                 self.parent_widget.stacked_widget.setCurrentWidget(self.parent_widget.main_page)
                 self.clearBoard()
+
+    def ai_move(self):
+        # 현재 보드 상태와 현재 플레이어 정보를 사용하여 AI가 돌 두기
+        current_state = GomokuState(copy.deepcopy(self.board), self.current_player)
+        agent = MCTSAgent(iterations=5)    #TODO: iteration 수정
+        move = agent.select_move(current_state)
+        if move is not None:
+            r, c = move
+            self.board[r][c] = self.current_player
+
+            if check_if_win(self.board, r, c, self.current_player) == True:
+                winner_color = "Black" if self.current_player == 1 else "White"
+                self.game_over(winner_color)
+                return
+
+            self.current_player = -self.current_player
+            self.update()
+            # 만약 AI 턴 후에도 AI가 계속 두어야 한다면 (예: 두 명의 AI 대결), 여기서 다시 호출
+            # if self.current_player == -1:
+            #     QTimer.singleShot(500, self.ai_move)
+
+    def run_ai_move(self):
+        """Execute AI move separately after UI updates."""
+        if not self.is_ai_turn:
+            return
+
+        start_time = time.time()
+        self.ai_move()
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"AI move execution time: {execution_time:.6f} seconds")
+
+        self.is_ai_turn = False
+
+    def is_valid_move(self, row, col):
+        """Check if move is valid according to game rules"""
+        if not (0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE):
+            return False
+        if self.board[row][col] != 0:
+            return False
+
+        # Check renju rules for black
+        if self.current_player == 1:
+            if (is_double_three(self.board, row, col, self.current_player) or
+                    is_double_four(self.board, row, col) or
+                    is_overline(self.board, row, col)):
+                return False
+        return True
 
 
     def ai_move(self):

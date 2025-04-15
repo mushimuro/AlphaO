@@ -252,10 +252,11 @@ def is_overline(gui_board, y,x):
 
     return False
 
+
 def is_double_three(board, y, x, color):
     if color != 1:
         return False
-    
+
     cnt = 0
     gui_board = copy.deepcopy(board)
     gui_board[y][x] = 1
@@ -272,14 +273,14 @@ def is_double_three(board, y, x, color):
         empty_cnt = 0
         black_stone_cnt = 0
         white_stone_cnt = 0
-        
+
         while True:
             ny += yy
             nx += xx
-            
+
             if is_invalid(ny, nx):
                 break
-                
+
             if gui_board[ny][nx] == 0:
                 line.append(0)
                 empty_cnt += 1

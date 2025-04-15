@@ -5,3 +5,4 @@ __pycache__
 board_img.png
 samsam_test.py
 minimax_reference
+.vscode

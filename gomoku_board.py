@@ -7,7 +7,6 @@ import time
 from ai_training.minimax import Minimax
 from renju_rule import check_if_win
 
-
 # default size for board and stone
 BOARD_SIZE = 15
 CELL_SIZE = 40
@@ -23,20 +22,28 @@ class GomokuBoard(QWidget):
         self.parent_widget = parent
 
         # self.ai_model = "minimax_model"
-        self.ai = Minimax(depth=2)
+        self.ai = Minimax(depth=3)
         self.is_ai_turn = False
+        
+        # AI related attributes
+        self.ai = Minimax(depth=3)
+        self.is_ai_enabled = False
+        self.is_ai_turn = False
+        self.player_color = 1  # 1 for black, -1 for white
         
         # TODO : make the size to be flexible : if window becomes smaller, the board scales down too
         self.setFixedSize(BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE)
         
-
         #################################################################
         # TODO ??? self.setFixedSize(self.sizeHint())
         # TODO : using image background, need to work on making exact placements
         # self.board_image = QPixmap(os.path.join(os.path.dirname(__file__), "board_img.png"))
         self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "white_background.png"))
         #################################################################
-    
+
+    def set_ai_depth(self, depth):
+        """Update AI depth based on difficulty setting"""
+        self.ai = Minimax(depth=depth)
 
     def paintEvent(self, event):
         """Draws the board grid and stones."""
@@ -52,13 +59,14 @@ class GomokuBoard(QWidget):
         painter.drawPixmap(0, 0, scaled_board)
         #################################################################
 
+        # Draw grid
         pen = QPen(Qt.GlobalColor.black, 2)
         painter.setPen(pen)
         for i in range(BOARD_SIZE):
             painter.drawLine(i * CELL_SIZE + CELL_SIZE // 2, CELL_SIZE // 2,
-                             i * CELL_SIZE + CELL_SIZE // 2, (BOARD_SIZE - 1) * CELL_SIZE + CELL_SIZE // 2)
+                           i * CELL_SIZE + CELL_SIZE // 2, (BOARD_SIZE - 1) * CELL_SIZE + CELL_SIZE // 2)
             painter.drawLine(CELL_SIZE // 2, i * CELL_SIZE + CELL_SIZE // 2,
-                             (BOARD_SIZE - 1) * CELL_SIZE + CELL_SIZE // 2, i * CELL_SIZE + CELL_SIZE // 2)
+                           (BOARD_SIZE - 1) * CELL_SIZE + CELL_SIZE // 2, i * CELL_SIZE + CELL_SIZE // 2)
 
         # draw stones
         for row in range(BOARD_SIZE):
@@ -75,10 +83,13 @@ class GomokuBoard(QWidget):
 
     # placing stones
     def mousePressEvent(self, event):
+
+        self.is_ai_turn = False
+
         x, y = event.position().x(), event.position().y()
         col = int(x // CELL_SIZE)   # x-value
         row = int(y // CELL_SIZE)   # y-value
-
+       
         if self.is_valid_move(row, col):
             self.board[row][col] = self.current_player
             self.update()
@@ -93,6 +104,8 @@ class GomokuBoard(QWidget):
             # self.current_player = -self.current_player
             self.current_player = -1
             self.is_ai_turn = True
+            # self.current_player = -self.current_player
+
 
             QTimer.singleShot(100, self.run_ai_move)
 
@@ -101,6 +114,7 @@ class GomokuBoard(QWidget):
     def clearBoard(self):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
         self.current_player = 1  
+        self.is_ai_turn = False
         self.update()
 
 

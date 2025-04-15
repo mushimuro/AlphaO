@@ -47,9 +47,6 @@ class GomokuBoard(QWidget):
         self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "white_background.png"))
         #################################################################
 
-    def set_ai_depth(self, depth):
-        """Update AI depth based on difficulty setting"""
-        self.ai = Minimax(depth=depth)
 
     def paintEvent(self, event):
         """Draws the board grid and stones."""

@@ -22,6 +22,7 @@ class GomokuBoard(QWidget):
         super().__init__(parent)
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
         self.current_player = 1
+        self.last_move = None
         self.parent_widget = parent
 
 ############  MINIMAX ##########################################################################################
@@ -74,14 +75,25 @@ class GomokuBoard(QWidget):
         # draw stones
         for row in range(BOARD_SIZE):
             for col in range(BOARD_SIZE):
-                if self.board[row][col] != 0:  # ensures blank space
+                if self.board[row][col] != 0:  # 빈 공간이 아닌 경우
+                    # 돌 색상 설정
                     if self.board[row][col] == 1:
                         painter.setBrush(QBrush(Qt.GlobalColor.black))
                     else:
                         painter.setBrush(QBrush(Qt.GlobalColor.white))
+                    
+                    # 돌 중심 좌표 계산
                     x = col * CELL_SIZE + CELL_SIZE // 2
                     y = row * CELL_SIZE + CELL_SIZE // 2
+                    # 돌 그리기
                     painter.drawEllipse(QPoint(x, y), STONE_SIZE, STONE_SIZE)
+                    
+                    # highlight
+                    if self.last_move == (row, col):
+                        highlight_pen = QPen(Qt.GlobalColor.red, 3)
+                        painter.setPen(highlight_pen)
+                        painter.drawEllipse(QPoint(x, y), STONE_SIZE + 3, STONE_SIZE + 3)
+                        painter.setPen(pen)
 
 
     # placing stones
@@ -95,6 +107,7 @@ class GomokuBoard(QWidget):
        
         if self.is_valid_move(row, col):
             self.board[row][col] = self.current_player
+            self.last_move = (row, col)
             self.update()
 
             # check for win
@@ -128,7 +141,8 @@ class GomokuBoard(QWidget):
     # creates new board when a game ends
     def clearBoard(self):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
-        self.current_player = 1  
+        self.current_player = 1
+        self.last_move = None  
         self.is_ai_turn = False
         self.update()
 
@@ -145,16 +159,17 @@ class GomokuBoard(QWidget):
                 self.parent_widget.stacked_widget.setCurrentWidget(self.parent_widget.main_page)
                 self.clearBoard()
 
-    def ai_move(self):
+    def mcts_ai_move(self):
         # 현재 보드 상태와 현재 플레이어 정보를 사용하여 AI가 돌 두기
         current_state = GomokuState(copy.deepcopy(self.board), self.current_player)
         agent = MCTSAgent(iterations=5)    #TODO: iteration 수정
         move = agent.select_move(current_state)
         if move is not None:
-            r, c = move
-            self.board[r][c] = self.current_player
+            row, col = move
+            self.board[row][col] = self.current_player
+            self.last_move = (row, col)
 
-            if check_if_win(self.board, r, c, self.current_player) == True:
+            if check_if_win(self.board, row, col, self.current_player) == True:
                 winner_color = "Black" if self.current_player == 1 else "White"
                 self.game_over(winner_color)
                 return
@@ -165,36 +180,7 @@ class GomokuBoard(QWidget):
             # if self.current_player == -1:
             #     QTimer.singleShot(500, self.ai_move)
 
-    def run_ai_move(self):
-        """Execute AI move separately after UI updates."""
-        if not self.is_ai_turn:
-            return
-
-        start_time = time.time()
-        self.ai_move()
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"AI move execution time: {execution_time:.6f} seconds")
-
-        self.is_ai_turn = False
-
-    def is_valid_move(self, row, col):
-        """Check if move is valid according to game rules"""
-        if not (0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE):
-            return False
-        if self.board[row][col] != 0:
-            return False
-
-        # Check renju rules for black
-        if self.current_player == 1:
-            if (is_double_three(self.board, row, col, self.current_player) or
-                    is_double_four(self.board, row, col) or
-                    is_overline(self.board, row, col)):
-                return False
-        return True
-
-
-    def ai_move(self):
+    def minimax_ai_move(self):
         """Execute AI move"""
         # if self.is_ai_turn and self.is_ai_enabled:
         # QApplication.processEvents()  # Allow GUI to update
@@ -204,7 +190,7 @@ class GomokuBoard(QWidget):
             row, col = move
             if self.is_valid_move(row, col):
                 self.board[row][col] = self.current_player
-                # self.update()
+                self.last_move = (row, col)
                 
                 if check_if_win(self.board, row, col, self.current_player):
                     winner_color = "Black" if self.current_player == 1 else "White"
@@ -215,13 +201,14 @@ class GomokuBoard(QWidget):
                     self.current_player = -1 # if self.current_player == 1 else 1
                     self.is_ai_turn = False
 
-            
+        
     def run_ai_move(self):
         if not self.is_ai_turn:
             return
 
         start_time = time.time()
-        self.ai_move()
+        self.minimax_ai_move()
+        # self.mcts_ai_move()
         end_time = time.time()
         print(f"AI move execution time: {end_time - start_time:.6f} seconds")
 

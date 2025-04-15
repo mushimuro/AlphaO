@@ -191,18 +191,28 @@ def train_model(model, training_data, epochs=10, batch_size=32, learning_rate=1e
 
 if __name__ == '__main__':
     board_size = 15
-    # Instantiate the model.
     model = GomokuNet(board_size=board_size, input_channels=3, num_res_blocks=5, num_filters=64)
-    # Move the model to the GPU (if available).
     model.to(device)
-    
+
+    # Load latest checkpoint
+    last_iter = 0
+    for i in range(20, 0, -1):
+        ckpt_path = f"model_checkpoint_iter_{i}.pth"
+        if os.path.exists(ckpt_path):
+            model.load_state_dict(torch.load(ckpt_path, map_location=device))
+            last_iter = i
+            print(f"✅ Loaded checkpoint from iteration {i}")
+            break
+    else:
+        print("⚠️ No checkpoint found. Starting from scratch.")
+
     total_iterations = 20
-    for iteration in range(total_iterations):
+    for iteration in range(last_iter, total_iterations):
         print(f"\nIteration {iteration+1}/{total_iterations}: Self-play phase")
         training_examples = play_self_games(model, num_games=10, num_simulations=100)
-        
+
         print("Training phase")
         train_model(model, training_examples, epochs=10, batch_size=32, learning_rate=1e-3)
-        
-        # Save a checkpoint for each iteration.
+
         torch.save(model.state_dict(), f"model_checkpoint_iter_{iteration+1}.pth")
+

@@ -224,7 +224,7 @@ class Minimax:
                     if has_neighbor:
                         if color == 1:
                             if (is_double_three(board, i, j, color) or 
-                                is_double_four(board, i, j) or 
+                                is_double_four(board, i, j, color) or 
                                 is_overline(board, i, j)):
                                 continue
                         valid_moves.append((i, j))

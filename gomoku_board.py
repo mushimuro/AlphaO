@@ -136,7 +136,6 @@ class GomokuBoard(QWidget):
             self.is_ai_turn = True
             # self.current_player = -self.current_player
 
-
             QTimer.singleShot(100, self.run_ai_move)
 
 

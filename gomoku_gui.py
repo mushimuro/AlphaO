@@ -1,8 +1,10 @@
 # gomoku_gui.py
-import sys
+import sys, os
 from PyQt6.QtWidgets import QApplication, QDialog, QStackedWidget, QVBoxLayout, QFormLayout, QHBoxLayout, QLabel, QPushButton, QComboBox, QRadioButton, QMessageBox, QWidget
 from PyQt6.QtCore import Qt
 from gomoku_board import GomokuBoard
+from PyQt6.QtGui import QPixmap
+
 
 class Main(QDialog):
     def __init__(self):
@@ -34,11 +36,12 @@ class Main(QDialog):
     
         start_button_widget = QPushButton("click to start")
         start_button_layout.addWidget(start_button_widget)
-        start_button_widget.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_page))
+        start_button_widget.clicked.connect(self.start_game_with_selected_model)
+        # start_button_widget.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_page))
 
         # choose level difficulty
-        level_widget = QComboBox()
-        level_widget.addItems(["Choose model", "Minimax", "MCTS", "DL"])
+        self.level_widget = QComboBox()
+        self.level_widget.addItems(["Choose model", "Minimax", "MCTS", "DL"])
         # choose white/black stone
         # TODO : 컴퓨터랑 사람이랑 턴제로 하는데, 사람이 색 선택시... function 만들기
         radio_white, radio_black = QRadioButton("White"), QRadioButton("Black")
@@ -47,7 +50,7 @@ class Main(QDialog):
     
         # ordering of layouts/widgets (top -> down)
         layout1.addWidget(label_widget)
-        layout1.addWidget(level_widget)
+        layout1.addWidget(self.level_widget)
         layout1.addWidget(start_button_widget)
         main_layout.addRow(layout1)  
         main_layout.addRow(color_layout)
@@ -74,7 +77,8 @@ class Main(QDialog):
         surrender_button_widget = QPushButton("surrender")
         place_button_widget = QPushButton("place")
         self.gomoku_board = GomokuBoard(parent=self)
-        
+        place_button_widget.clicked.connect(self.gomoku_board.confirm_move)
+
         # widget customize & functions
         label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label_widget.setStyleSheet("font-size: 24px; font-weight: bold;")
@@ -97,6 +101,20 @@ class Main(QDialog):
         # self.game_page.setLayout(main_layout)
         game_page_widget.setLayout(main_layout)
         return game_page_widget
+    
+
+    def start_game_with_selected_model(self):
+        selected_text = self.level_widget.currentText().lower()
+        if selected_text in ["minimax", "mcts", "dl"]:
+            self.gomoku_board.selected_ai_model = selected_text
+            self.stacked_widget.setCurrentWidget(self.game_page)
+        else:
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("Error")
+            msg_box.setText("Please select a valid AI model to start the game.")
+            msg_box.setIconPixmap(QPixmap(os.path.join(os.path.dirname(__file__), "assets", "error.png")).scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio))
+            msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msg_box.exec()
 
 
     # function for handling game-over

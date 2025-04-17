@@ -26,6 +26,7 @@ class GomokuBoard(QWidget):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]
         self.current_player = 1
         self.last_move = None
+        self.selected_move = None
         self.parent_widget = parent
 
 ############  MINIMAX ##########################################################################################
@@ -59,7 +60,7 @@ class GomokuBoard(QWidget):
         # TODO ??? self.setFixedSize(self.sizeHint())
         # TODO : using image background, need to work on making exact placements
         # self.board_image = QPixmap(os.path.join(os.path.dirname(__file__), "board_img.png"))
-        self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "white_background.png"))
+        self.background_img = QPixmap(os.path.join(os.path.dirname(__file__), "addets", "white_background.png"))
         #################################################################
 
 
@@ -109,34 +110,52 @@ class GomokuBoard(QWidget):
                         painter.drawEllipse(QPoint(x, y), STONE_SIZE + 3, STONE_SIZE + 3)
                         painter.setPen(pen)
 
+        # shadowing before pressing "place" button
+        if self.selected_move and self.board[self.selected_move[0]][self.selected_move[1]] == 0:
+            row, col = self.selected_move
+            painter.setBrush(QBrush(Qt.GlobalColor.gray))
+            x = col * CELL_SIZE + CELL_SIZE // 2
+            y = row * CELL_SIZE + CELL_SIZE // 2
+            painter.drawEllipse(QPoint(x, y), STONE_SIZE, STONE_SIZE)
+
 
     # placing stones
     def mousePressEvent(self, event):
-
-        self.is_ai_turn = False
+        if self.is_ai_turn:
+            return
 
         x, y = event.position().x(), event.position().y()
-        col = int(x // CELL_SIZE)   # x-value
-        row = int(y // CELL_SIZE)   # y-value
-       
+        col = int(x // CELL_SIZE)
+        row = int(y // CELL_SIZE)
+
         if self.is_valid_move(row, col):
-            self.board[row][col] = self.current_player
-            self.last_move = (row, col)
+            self.selected_move = (row, col)
             self.update()
 
-            # check for win
-            if check_if_win(self.board, row, col, self.current_player):
-                winner_color = "Black" if self.current_player == 1 else "White"
-                self.game_over_signal.emit(winner_color)
-                self.is_ai_turn = False
-                return
-            
-            # self.current_player = -self.current_player
-            self.current_player = -1
-            self.is_ai_turn = True
-            # self.current_player = -self.current_player
+        # self.is_ai_turn = False
 
-            QTimer.singleShot(100, self.run_ai_move)
+        # x, y = event.position().x(), event.position().y()
+        # col = int(x // CELL_SIZE)   # x-value
+        # row = int(y // CELL_SIZE)   # y-value
+       
+        # if self.is_valid_move(row, col):
+        #     self.board[row][col] = self.current_player
+        #     self.last_move = (row, col)
+        #     self.update()
+
+        #     # check for win
+        #     if check_if_win(self.board, row, col, self.current_player):
+        #         winner_color = "Black" if self.current_player == 1 else "White"
+        #         self.game_over_signal.emit(winner_color)
+        #         self.is_ai_turn = False
+        #         return
+            
+        #     # self.current_player = -self.current_player
+        #     self.current_player = -1
+        #     self.is_ai_turn = True
+        #     # self.current_player = -self.current_player
+
+        #     QTimer.singleShot(100, self.run_ai_move)
 
 
     # creates new board when a game ends
@@ -144,8 +163,32 @@ class GomokuBoard(QWidget):
         self.board = [[0] * BOARD_SIZE for _ in range(BOARD_SIZE)]  
         self.current_player = 1
         self.last_move = None  
+        self.selected_move = None
         self.is_ai_turn = False
         self.update()
+
+
+    def confirm_move(self):
+        if not self.selected_move:
+            return
+
+        row, col = self.selected_move
+        if self.is_valid_move(row, col):
+            self.board[row][col] = self.current_player
+            self.last_move = (row, col)
+            self.selected_move = None
+            self.update()
+
+            if check_if_win(self.board, row, col, self.current_player):
+                winner_color = "Black" if self.current_player == 1 else "White"
+                self.game_over_signal.emit(winner_color)
+                self.is_ai_turn = False
+                return
+
+            self.current_player = -1
+            self.is_ai_turn = True
+            QTimer.singleShot(100, self.run_ai_move)
+
 
     # pop up screen when someone wins / redirects to main page when clicking "ok"
     def show_win_popup(self, winner_color):
@@ -244,9 +287,17 @@ class GomokuBoard(QWidget):
             return
 
         start_time = time.time()
-        self.minimax_ai_move()
-        # self.mcts_ai_move()
-        # self.nn_ai_move()
+        if self.selected_ai_model == "minimax":
+            # print("minimax")
+            self.minimax_ai_move()
+        elif self.selected_ai_model == "mcts":
+            # print("mcts")
+            self.mcts_ai_move()
+        elif self.selected_ai_model == "dl":
+            # print("dl")
+            self.nn_ai_move()
+        else:
+            print("⚠️ Error occured in selecting model!")
         end_time = time.time()
         print(f"AI move execution time: {end_time - start_time:.6f} seconds")
 

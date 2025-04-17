@@ -2,8 +2,8 @@ import math
 import copy
 import torch
 import numpy as np
-from nn_deeplearning import GomokuNet
-from nn_renju_rule import check_winner, is_allowed_move  # Import terminal-state functions
+from ai_training.nn_deeplearning import GomokuNet
+from ai_training.nn_renju_rule import check_winner, is_allowed_move  # Import terminal-state functions
 
 ##############################################
 # Helper functions for board encoding and moves

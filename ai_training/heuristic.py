@@ -68,23 +68,32 @@ def threat_blocking_score(state, move):
 
     # 나에게 유리한지 판단: 현재 돌을 놓은 후의 상태 검사
     r.set_stone(x, y, current_player)
-    if r.is_five(x, y, current_player):
-        return 100000
     for direction in range(4):
+        if r.is_five(x, y, current_player):
+            return 100000
         if r.open_four(x, y, current_player, direction):
             bonus += 24000
         if r.four(x, y, current_player, direction):
-            bonus += 10000
+            bonus += 5000
         if r.open_three(x, y, current_player, direction):
-            bonus += 400
+            bonus += 3000
+        if r.three(x, y, current_player, direction):
+            bonus += 1000
     # 원래 상태로 복원
     r.set_stone(x, y, 0)
 
     # 위험도 판단: 상대 돌에 대한 체크
+    r.set_stone(x, y, opponent)
     for direction in range(4):
-        if r.get_stone_count(x, y, opponent, direction) >= 4:
-            bonus += 49000
+        if r.is_five(x, y, opponent):
+            return 49000
+        if r.open_four(x, y, opponent, direction):
+            bonus += 10000
+        if r.four(x, y, opponent, direction):
+            bonus += 4000
         if r.open_three(x, y, opponent, direction):
+            bonus += 2000
+        if r.three(x, y, opponent, direction):
             bonus += 1000
     return bonus
 

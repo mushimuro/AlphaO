@@ -194,10 +194,13 @@ if __name__ == '__main__':
     model = GomokuNet(board_size=board_size, input_channels=3, num_res_blocks=5, num_filters=64)
     model.to(device)
 
+    ckpt_dir = os.path.join(os.path.dirname(__file__), "ai_training", "trained_data")
+    os.makedirs(ckpt_dir, exist_ok=True)
+
     # Load latest checkpoint
     last_iter = 0
     for i in range(20, 0, -1):
-        ckpt_path = f"model_checkpoint_iter_{i}.pth"
+        ckpt_path = os.path.join(ckpt_dir, f"model_checkpoint_iter_{i}.pth")
         if os.path.exists(ckpt_path):
             model.load_state_dict(torch.load(ckpt_path, map_location=device))
             last_iter = i
@@ -214,5 +217,7 @@ if __name__ == '__main__':
         print("Training phase")
         train_model(model, training_examples, epochs=10, batch_size=32, learning_rate=1e-3)
 
-        torch.save(model.state_dict(), f"model_checkpoint_iter_{iteration+1}.pth")
+        ckpt_path = os.path.join(ckpt_dir, f"model_checkpoint_iter_{iteration+1}.pth")
+        torch.save(model.state_dict(), ckpt_path)
+        print(f"💾 Saved checkpoint to {ckpt_path}")
 

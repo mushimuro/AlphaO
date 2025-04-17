@@ -6,6 +6,9 @@ from renju_rule import *
 import time
 from ai_training.minimax import Minimax
 from renju_rule import check_if_win
+import torch
+from ai_training.nn_deeplearning import GomokuNet
+from ai_training.nn_mcts import board_to_tensor
 
 
 # default size for board and stone
@@ -25,6 +28,18 @@ class GomokuBoard(QWidget):
         # self.ai_model = "minimax_model"
         self.ai = Minimax(depth=2)
         self.is_ai_turn = False
+
+        # trained_nn model loading
+        model_path = os.path.join(os.path.dirname(__file__), "ai_training", "trained_data", "model_checkpoint_iter_20.pth")
+        # use GPU if available
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.net = GomokuNet().to(device)
+        # checkpoint = torch.load(model_path, map_location=device)
+        # self.net.load_state_dict(checkpoint["model_state_dict"])
+        self.net.load_state_dict(torch.load(model_path, map_location=device))
+
+        self.net.eval()
+        self.device = device
         
         # TODO : make the size to be flexible : if window becomes smaller, the board scales down too
         self.setFixedSize(BOARD_SIZE * CELL_SIZE, BOARD_SIZE * CELL_SIZE)
@@ -139,6 +154,42 @@ class GomokuBoard(QWidget):
                     self.current_player = -1 # if self.current_player == 1 else 1
                     self.is_ai_turn = False
 
+    def nn_ai_move(self):
+        """Execute one network‐guided move."""
+        # assemble input tensor: shape (1, C, 15, 15)
+        board_tensor = board_to_tensor(self.board, self.current_player)
+        board_tensor = board_tensor.unsqueeze(0).to(self.device)
+
+        with torch.no_grad():
+            policy_logits, value = self.net(board_tensor)
+            # assume policy_logits shape is [1, 225]
+            policy = torch.softmax(policy_logits, dim=1).view(-1)
+
+        # mask out illegal positions
+        legal = []
+        for idx in range(BOARD_SIZE * BOARD_SIZE):
+            r, c = idx // BOARD_SIZE, idx % BOARD_SIZE
+            if self.is_valid_move(r, c):
+                legal.append(idx)
+
+        # pick the legal idx with highest probability
+        best_idx = max(legal, key=lambda i: policy[i].item())
+        row, col = best_idx // BOARD_SIZE, best_idx % BOARD_SIZE
+
+        # play it
+        self.board[row][col] = self.current_player
+        self.update()
+
+        if check_if_win(self.board, row, col, self.current_player):
+            winner_color = "Black" if self.current_player == 1 else "White"
+            self.game_over_signal.emit(winner_color)
+            self.is_ai_turn = False
+            return
+
+        # hand control back to the human
+        self.current_player = 1
+        self.is_ai_turn = False
+
             
     def run_ai_move(self):
         if not self.is_ai_turn:
@@ -146,6 +197,7 @@ class GomokuBoard(QWidget):
 
         start_time = time.time()
         self.ai_move()
+        # self.nn_ai_move()
         end_time = time.time()
         print(f"AI move execution time: {end_time - start_time:.6f} seconds")
 
@@ -164,7 +216,7 @@ class GomokuBoard(QWidget):
         # Check renju rules for black
         if self.current_player == 1:
             if (is_double_three(self.board, row, col, self.current_player) or 
-                is_double_four(self.board, row, col) or 
+                is_double_four(self.board, row, col, self.current_player) or 
                 is_overline(self.board, row, col)):
                 return False
         return True

@@ -118,6 +118,16 @@ class GomokuBoard(QWidget):
             y = row * CELL_SIZE + CELL_SIZE // 2
             painter.drawEllipse(QPoint(x, y), STONE_SIZE, STONE_SIZE)
 
+        # shows forbidden moves
+        if self.current_player == 1:
+            forbidden = self.get_forbidden_moves()
+            self.forbidden_pixmap = QPixmap(os.path.join(os.path.dirname(__file__), "assets", "forbidden.png"))
+            img_scaled = self.forbidden_pixmap.scaled(STONE_SIZE * 2, STONE_SIZE * 2, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            for r, c in forbidden:
+                x = c * CELL_SIZE + CELL_SIZE // 2 - img_scaled.width() // 2
+                y = r * CELL_SIZE + CELL_SIZE // 2 - img_scaled.height() // 2
+                painter.drawPixmap(x, y, img_scaled)
+
 
     # placing stones
     def mousePressEvent(self, event):
@@ -131,31 +141,6 @@ class GomokuBoard(QWidget):
         if self.is_valid_move(row, col):
             self.selected_move = (row, col)
             self.update()
-
-        # self.is_ai_turn = False
-
-        # x, y = event.position().x(), event.position().y()
-        # col = int(x // CELL_SIZE)   # x-value
-        # row = int(y // CELL_SIZE)   # y-value
-       
-        # if self.is_valid_move(row, col):
-        #     self.board[row][col] = self.current_player
-        #     self.last_move = (row, col)
-        #     self.update()
-
-        #     # check for win
-        #     if check_if_win(self.board, row, col, self.current_player):
-        #         winner_color = "Black" if self.current_player == 1 else "White"
-        #         self.game_over_signal.emit(winner_color)
-        #         self.is_ai_turn = False
-        #         return
-            
-        #     # self.current_player = -self.current_player
-        #     self.current_player = -1
-        #     self.is_ai_turn = True
-        #     # self.current_player = -self.current_player
-
-        #     QTimer.singleShot(100, self.run_ai_move)
 
 
     # creates new board when a game ends
@@ -188,6 +173,22 @@ class GomokuBoard(QWidget):
             self.current_player = -1
             self.is_ai_turn = True
             QTimer.singleShot(100, self.run_ai_move)
+
+    
+    def get_forbidden_moves(self):
+        """Returns a list of forbidden (row, col) positions for Black."""
+        if self.current_player != 1:
+            return []
+        forbidden = []
+        for r in range(BOARD_SIZE):
+            for c in range(BOARD_SIZE):
+                if self.board[r][c] == 0 and (
+                    is_double_three(self.board, r, c, 1) or
+                    is_double_four(self.board, r, c, 1) or
+                    is_overline(self.board, r, c)
+                ):
+                    forbidden.append((r, c))
+        return forbidden
 
 
     # pop up screen when someone wins / redirects to main page when clicking "ok"

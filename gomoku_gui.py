@@ -37,7 +37,6 @@ class Main(QDialog):
         start_button_widget = QPushButton("click to start")
         start_button_layout.addWidget(start_button_widget)
         start_button_widget.clicked.connect(self.start_game_with_selected_model)
-        # start_button_widget.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.game_page))
 
         # choose level difficulty
         self.level_widget = QComboBox()

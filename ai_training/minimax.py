@@ -198,6 +198,11 @@ class Minimax:
         Returns:
             유효한 수의 좌표 리스트 [(row, col), ...]
         """
+        # returns (7,7) if empty board
+        board_has_stone = any(cell != 0 for row in board for cell in row)
+        if not board_has_stone:
+            return [(7, 7)]
+
         valid_moves = []
         for i in range(15):
             for j in range(15):

@@ -30,7 +30,7 @@ class Rule(object):
             while True:
                 x, y = x + dx, y + dy
                 if self.is_invalid(x, y) or self.board[y][x] != stone:
-                    break;
+                    break
                 else:
                     cnt += 1
         return cnt

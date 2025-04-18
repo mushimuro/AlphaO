@@ -23,6 +23,7 @@ def is_valid_move(board, move, stone):
     Returns True if the cell at move (y, x) is empty.
     """
     y, x = move
+    rule = Rule(board)
     
     # The cell must be empty
     if board[y][x] != 0:
@@ -30,7 +31,7 @@ def is_valid_move(board, move, stone):
 
     # Only check for forbidden moves if the stone is black.
     if stone == 1:
-        if is_invalid(y, x) or Rule.double_four(board, x, y, stone) or Rule.double_three(board, x, y, stone):
+        if rule.is_invalid(y, x) or rule.double_four(x, y, stone) or rule.double_three(x, y, stone):
             return False
 
     return True

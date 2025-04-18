@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
     # Load latest checkpoint
     last_iter = 0
-    for i in range(20, 0, -1):
+    for i in range(100, 0, -1):
         ckpt_path = os.path.join(ckpt_dir, f"model_checkpoint_iter_{i}.pth")
         if os.path.exists(ckpt_path):
             model.load_state_dict(torch.load(ckpt_path, map_location=device))
@@ -209,7 +209,7 @@ if __name__ == '__main__':
     else:
         print("⚠️ No checkpoint found. Starting from scratch.")
 
-    total_iterations = 20
+    total_iterations = 100
     for iteration in range(last_iter, total_iterations):
         print(f"\nIteration {iteration+1}/{total_iterations}: Self-play phase")
         training_examples = play_self_games(model, num_games=10, num_simulations=100)
